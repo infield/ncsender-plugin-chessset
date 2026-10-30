@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chess Set Creator harness</title>
+<link rel="icon" href="data:,">
+<style>
+  /* ncSender's dark theme values */
+  :root { --color-accent: #1abc9c; --color-bg: #111720; --color-surface: #1a222e; --color-surface-muted: #202a38;
+    --color-border: rgba(255,255,255,.06); --color-text-primary: #e6ecf2; --color-text-secondary: #93a2b4;
+    --color-danger: #e74c3c; --color-success: #2ecc71; --radius-medium: 16px; --radius-small: 10px; }
+  :root.light { --color-bg: #f7f9fc; --color-surface: #ffffff; --color-surface-muted: #eef2f6; --color-border: rgba(20,20,20,.08);
+    --color-text-primary: #1e2a32; --color-text-secondary: #5e6b75; }
+  body { margin: 0; background: var(--color-bg); font-family: Inter, system-ui, sans-serif; color: var(--color-text-primary); }
+  .plugin-dialog-backdrop { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.5); }
+  .plugin-dialog { background: var(--color-surface); border-radius: 16px; }
+  /* the host rule the plugin's selectors must outrank (AAxis item 9) */
+  .plugin-dialog-content button { background: var(--color-accent); color: #fff; }
+  .harness-bar { position: fixed; top: 6px; left: 6px; z-index: 10; display: flex; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="harness-bar"><button onclick="document.documentElement.classList.toggle('light')">Theme</button><button id="harness-open" onclick="openDialog()">Open</button></div>
+<div class="plugin-dialog-backdrop" id="bd"><div class="plugin-dialog"><div class="plugin-dialog-content" id="content"></div></div></div>
+<script>
+  window.ncSender = { getApiBaseUrl: () => '' };
+  // Inserts the dialog the way ncSender does: v-html, then the scripts run.
+  async function openDialog(raw) {
+    const html = await (await fetch('/api/plugins/com.infield.chessset/config-ui' + (raw ? '?raw=1' : ''))).text();
+    const c = document.getElementById('content');
+    document.getElementById('bd').style.display = 'flex';
+    c.innerHTML = html;
+    c.querySelectorAll('script').forEach((old) => { const s = document.createElement('script'); s.textContent = old.textContent; old.replaceWith(s); });
+  }
+  window.addEventListener('message', (e) => { if (e.data && e.data.type === 'close-plugin-dialog') { document.getElementById('content').innerHTML = ''; document.getElementById('bd').style.display = 'none'; } });
+  openDialog(new URLSearchParams(location.search).has('raw'));
+</script>
+</body>
+</html>

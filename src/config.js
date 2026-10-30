@@ -27,3 +27,16 @@ export const FRAME_TOL = 0.1;
 export const BAND = 1.0;
 export const PROFILE_STEP = 0.5;
 export const MAX_COPIES = 999;
+
+// §5.1 job defaults, in mm. Settings start from these (P4.7).
+export const DEFAULT_INPUTS = Object.freeze({
+  queenBase: 38.1,
+  stockLength: 457.2,
+  stockShape: 'square',
+  stockWidth: 50.8,
+  chuckRes: 25.4,
+  tailRes: 19.05,
+  gap: 10,
+  radialAllowance: 1.5,
+  sides: 'both',
+});

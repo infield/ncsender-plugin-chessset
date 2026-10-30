@@ -1,0 +1,30 @@
+<div class="csc-shell" id="csc-root">
+  <div style="padding: 24px; color: var(--color-text-secondary);">Starting Chess Set Creator…</div>
+</div>
+
+<script>
+(function () {
+  var BUILD = '0.1.0-mvvjzv7r';
+  var RAW_PORT = '__SERVER_PORT__';
+  var PORT = /^\d+$/.test(RAW_PORT) ? Number(RAW_PORT) : 8090;
+  var base = window.ncSender && typeof window.ncSender.getApiBaseUrl === 'function' ? window.ncSender.getApiBaseUrl(PORT) : '';
+  if (base === undefined || base === null) base = '';
+  var file = function (name) { return base + '/api/plugins/com.infield.chessset/icon?file=' + encodeURIComponent(name); };
+  var root = document.getElementById('csc-root');
+  var fail = function (err) { root.textContent = 'Chess Set Creator could not start: ' + String((err && err.message) || err); };
+  var start = function () {
+    try { window.ChessSet.mount(root, { base: base, file: file, build: BUILD }); } catch (e) { fail(e); }
+  };
+  if (window.ChessSet && window.ChessSet.build === BUILD) return start();
+  fetch(file('lib/app.js'))
+    .then(function (r) { if (!r.ok) throw new Error('lib/app.js: ' + r.status); return r.text(); })
+    .then(function (code) {
+      var s = document.createElement('script');
+      s.textContent = code;
+      document.head.appendChild(s);
+      window.ChessSet.source = code;
+      start();
+    })
+    .catch(fail);
+})();
+</script>

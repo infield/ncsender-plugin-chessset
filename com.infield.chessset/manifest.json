@@ -1,0 +1,28 @@
+{
+  "id": "com.infield.chessset",
+  "name": "Chess Set Creator",
+  "version": "0.1.0",
+  "minAppVersion": "2.0.88",
+  "platforms": {
+    "v2": "2.0.88",
+    "pro-v2": "2.0.149"
+  },
+  "repository": "https://github.com/infield/ncsender-plugin-chessset",
+  "author": "Marc Infield",
+  "description": "Plans a turned chess set onto rotary blanks: scales a model package to your queen base size, checks stock fit and jaw sets, and packs both sides onto the fewest blanks.",
+  "configUi": "config.html",
+  "icon": "icon.svg",
+  "category": "utility",
+  "events": [],
+  "permissions": [
+    "gcode.modify"
+  ],
+  "toolMenu": [
+    {
+      "id": "open-config",
+      "label": "Chess Set Creator",
+      "icon": "icon.svg",
+      "clientOnly": true
+    }
+  ]
+}
