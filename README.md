@@ -28,6 +28,6 @@ Related: [`../AAxis/`](../AAxis/), the A-Axis Tools plugin, whose conventions th
 
 ## License
 
-Dual licence, matching ncSender: GPL-3.0 ([`LICENSE-GPL-3.0`](LICENSE-GPL-3.0)) or a commercial licence from the copyright holder, Marc Infield (marc@infield.net). See [`LICENSE`](LICENSE) and spec decision D11.
+GPL-3.0. See [`LICENSE`](LICENSE). This matches AAxis and ncCAM (spec decision D11).
 
 The Staunton chess models (clarkerubber/Staunton-Pieces) are a separate download under their own MIT licence, and are never part of the plugin. Exports carry their attribution in `LICENSE-models.txt` (spec §5.8).

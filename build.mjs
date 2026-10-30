@@ -29,8 +29,8 @@ await build({
 const htmlPath = `${PLUGIN}/config.html`;
 writeFileSync(htmlPath, readFileSync(htmlPath, 'utf8').replace(/var BUILD = '[^']*';/, `var BUILD = '${tag}';`));
 
-// The plugin ships copies of the repository's dual-licence files (D11).
-for (const f of ['LICENSE', 'LICENSE-GPL-3.0']) copyFileSync(f, `${PLUGIN}/${f}`);
+// The plugin ships a copy of the repository's GPL-3.0 LICENSE (D11).
+copyFileSync('LICENSE', `${PLUGIN}/LICENSE`);
 
 const size = readFileSync(`${PLUGIN}/lib/app.js`).length;
 console.log(`${PLUGIN}/lib/app.js ${(size / 1024).toFixed(0)} KB, build ${tag}`);

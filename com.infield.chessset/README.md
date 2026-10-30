@@ -38,6 +38,6 @@ Export will write one STL per blank, a setup file for Rotary CAM, a `layout.json
 
 ## Licence
 
-Chess Set Creator is dual-licensed, like ncSender: GPL-3.0 (see `LICENSE-GPL-3.0`), or a commercial licence from the copyright holder, Marc Infield (marc@infield.net). See `LICENSE`.
+Chess Set Creator is © 2026 Marc Infield, licensed under GPL-3.0. See `LICENSE`.
 
 The chess-piece models are a separate package with their own licence (the Staunton set is MIT, © 2014 clarkerubber).

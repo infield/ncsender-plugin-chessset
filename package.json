@@ -16,7 +16,7 @@
     "ui-check": "node tools/ui-check.mjs"
   },
   "author": "Marc Infield",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "GPL-3.0",
   "devDependencies": {
     "esbuild": "^0.28.2",
     "playwright-core": "^1.64.1"
