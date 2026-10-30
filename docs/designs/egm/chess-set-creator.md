@@ -2,7 +2,9 @@
 
 Owner: Marc Infield · Revision 7 · October 30, 2026 · Status: draft, not implemented
 
-Revision 2 restructured the spec by topic. It answered the Stage 5–7 reviews and added facts checked against the ncSender source and the Staunton model files. Revision 3 applies the fixes from the Stage 7 re-audit (`critic_report.md`, resolved in `goldfish_review_report.md`). Revision 4 records the owner's answers of October 30: Rotary CAM places the part on the axis and makes the holding tab; the longest blank between chuck and tailstock is 36 in; the jaw-set grip ranges; and neck size and gap are settled on a 12 in test blank. Revision 5 adds the approved Detailed Implementation Plan at the end, with matching edits to §5.1, §5.8 and §6. Revision 6 revises that plan after the Stage 9 review (`implementation_readiness_report.md`). Revision 7 adds the Rotary CAM handoff sidecar (§5.11) from owner input; for now stock size and placement stay in Rotary CAM. Earlier revisions are in `_archive/`. The woodworking build notes live in `Wooden_Staunton_Build_Notes.md`.
+Revision 2 restructured the spec by topic. It answered the Stage 5–7 reviews and added facts checked against the ncSender source and the Staunton model files. Revision 3 applies the fixes from the Stage 7 re-audit (`docs/designs/egm/reviews/rev2/critic_report.md`, resolved in `docs/designs/egm/reviews/rev2/goldfish_review_report.md`). Revision 4 records the owner's answers of October 30: Rotary CAM places the part on the axis and makes the holding tab; the longest blank between chuck and tailstock is 36 in; the jaw-set grip ranges; and neck size and gap are settled on a 12 in test blank. Revision 5 adds the approved Detailed Implementation Plan at the end, with matching edits to §5.1, §5.8 and §6. Revision 6 revises that plan after the Stage 9 review (`docs/designs/egm/reviews/rev5/implementation_readiness_report.md`). Revision 7 adds the Rotary CAM handoff sidecar (§5.11) from owner input; for now stock size and placement stay in Rotary CAM. Earlier revisions are in `docs/designs/egm/history/`, and every review round is indexed in `docs/designs/egm/reviews/INDEX.md`. The woodworking build notes live in `docs/research/domain/wooden-staunton-build-notes.md`.
+
+**File paths** in this document are relative to the project root (`Chess-Set-Creator/`), not to this file.
 
 **Status tags.** Tags go on items, not headings. Every requirement has exactly one of these:
 - **[C]** Confirmed by the owner.
@@ -550,7 +552,7 @@ All from ncSender source at commit `2f8a659`, checked October 30, 2026, unless m
 - ncCAM, a reference for the plugin build and the free-path convention: <https://github.com/siganberg/ncsender-plugin-nccam>.
 - Staunton models: <https://github.com/clarkerubber/Staunton-Pieces> (MIT).
 - FIDE equipment rules, effective March 1, 2026: <https://handbook.fide.com/chapter/ChessEquipmentWithoutElectronicComponenets032026>. The misspelling is FIDE's own URL.
-- Reviews: `zoom_out_report.md`, `comprehension_report.md`, `critic_report_rev1.md`, `critic_report.md`, `goldfish_review_report.md`.
+- Reviews: every round is listed in `docs/designs/egm/reviews/INDEX.md`.
 
 ---
 
@@ -588,9 +590,9 @@ One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as A
 
 ## Detailed Implementation Plan
 
-**Status:** approved by the owner on 2026-10-30, except D11 (licence), which is pending the owner. Revised the same day after the Stage 9 review (`implementation_readiness_report.md`, resolved in `goldfish_review_report.md`).
+**Status:** approved by the owner on 2026-10-30, except D11 (licence), which is pending the owner. Revised the same day after the Stage 9 review (`docs/designs/egm/reviews/rev5/implementation_readiness_report.md`, resolved in `docs/designs/egm/reviews/rev5/goldfish_review_report.md`).
 
-**Open review findings (accepted, not yet fixed):** the Stage 9 re-audit of this revision found no blockers and 11 Major findings (R-M1 to R-M11 in `implementation_readiness_report.md`). Among them: Phase 0 outcomes with no handling; settings that cannot be saved on a fresh install; the shape of the mock's `config-ui` response; ui-check runs that are not repeatable; an incomplete fflate ZIP sequence; an async SHA-256 check; `build.sh` version bumping; and wrong test expectations (AC-FIT-03 gives 5 errors; `shifted-axis` gives 3). The review was concluded with these open. Fix each one before or during the phase it affects. The plan below has not been re-reviewed since.
+**Open review findings (accepted, not yet fixed):** the Stage 9 re-audit of this revision found no blockers and 11 Major findings (R-M1 to R-M11 in `docs/designs/egm/reviews/rev6/implementation_readiness_report.md`). Among them: Phase 0 outcomes with no handling; settings that cannot be saved on a fresh install; the shape of the mock's `config-ui` response; ui-check runs that are not repeatable; an incomplete fflate ZIP sequence; an async SHA-256 check; `build.sh` version bumping; and wrong test expectations (AC-FIT-03 gives 5 errors; `shifted-axis` gives 3). The review was concluded with these open. Fix each one before or during the phase it affects. The plan below has not been re-reviewed since.
 
 **Numbering:** plan sections are numbered P1–P6 so they stay apart from the spec's § numbers. A bare § always refers to the spec.
 

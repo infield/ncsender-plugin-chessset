@@ -1,6 +1,6 @@
 # Consolidated Review Report: Chess Set Creator, Revision 7
 
-- **Target:** `Chess_Set_Creator.md`, Revision 7 (1,390 lines).
+- **Target:** `Chess_Set_Creator.md`, Revision 7 (1,390 lines). Now `docs/designs/egm/chess-set-creator.md`; the exact reviewed text is `docs/designs/egm/history/rev7.md`.
   - FeatureRange: lines 1–588.
   - DetailedRange: lines 589–1390.
 - **Run:** all five review stages in one pass, without checkpoints. No fixes were applied between stages.
@@ -12,7 +12,7 @@
   - `../AAxis/`
   - files linked from the spec
 - **Stage reports:** `zoom_out_report.md`, `comprehension_report.md`, `critic_report.md`, `intermediate_zoom_out_report.md`, `implementation_readiness_report.md`.
-- **Earlier review reports:** moved to `_archive/reviews_before_rev7/` before this run. The spec still cites them at their old paths (lines 5, 553, 593).
+- **Earlier review reports:** moved before this run; now in `docs/designs/egm/reviews/rev1/` … `rev6/` (see `docs/designs/egm/reviews/INDEX.md`). At the time of this review the spec cited them at their old paths (lines 5, 553, 593); those citations were updated in the reorganization that followed.
 
 ## Verdict
 
@@ -58,7 +58,7 @@ Each decision removes several downstream findings. The owner should make them be
 
 | ID | Finding | Fix | Sources |
 |---|---|---|---|
-| X-B1 | The plan defers 11 known defects to the implementer. Its status block contradicts itself ("approved", then "not re-reviewed"). The cited report is now in `_archive/`. | Write each resolution into its P-section, using the checked fixes in `implementation_readiness_report.md`. Delete line 593. Mark the plan "draft" until it is re-reviewed. Point the citations at `_archive/reviews_before_rev7/`. | C-B1, R9-B1, Z-N5, A2 |
+| X-B1 | The plan defers 11 known defects to the implementer. Its status block contradicts itself ("approved", then "not re-reviewed"). The cited report is now `docs/designs/egm/reviews/rev6/implementation_readiness_report.md`. | Write each resolution into its P-section, using the checked fixes in `implementation_readiness_report.md`. Delete line 593. Mark the plan "draft" until it is re-reviewed. Point the citations at `_archive/reviews_before_rev7/`. | C-B1, R9-B1, Z-N5, A2 |
 | X-B2 | Wrong test expectations. AC-FIT-03 with 100 mm stock produces **5** `TOO_LONG` errors (usable length 55.55 mm; only the pawn fits). `shifted-axis` fails **3** checks, and `checkPiece` never says whether it stops at the first failure. | State the rule: stop after a failure in check 1 or 3; checks 4–5 collect all errors. Expect [base, swept, axisOffset], or [axisOffset] under A4. Expect 5 `TOO_LONG` errors, each with `minLength` 143.6. | C-B2, R9-M7 |
 | X-B3 | D3 and `fm.js` cite ncCAM for a file-by-file probe that ncCAM abandoned. The real `freePath` is one tree walk (`src/ui/app.js:883–895`), and all three citations point to the wrong lines. | Either keep the probe as this plan's own choice, accepting the 404 log noise, or reuse the tree walk. Correct the citations either way. | R9-B2, C-M2, Z-N3 |
 
