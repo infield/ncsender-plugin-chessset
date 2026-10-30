@@ -23,7 +23,6 @@ export const DEFAULT_MACHINE = Object.freeze({
 export const NECK_OVERLAP = 0.5;
 export const NECK_SEGMENTS = 64;
 export const WELD_TOL = 0.001;
-export const WELD_RETRY_TOL = 0.01;
 export const FRAME_TOL = 0.1;
 export const BAND = 1.0;
 export const PROFILE_STEP = 0.5;

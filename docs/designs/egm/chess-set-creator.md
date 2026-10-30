@@ -578,7 +578,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
   3. Put the base at X = 0.
   4. Turn the knight so its face points +Z.
   5. Name the files in lowercase.
-  6. Weld vertices and check that every mesh is closed. A mesh that won't close is repaired in MeshLab and fed back to the tool. If it still won't close, the owner decides.
+  6. Weld vertices and check that every mesh is closed. The tool fills small, simple holes itself (implementation plan P4.11). A mesh that still won't close is repaired in MeshLab and fed back to the tool. If it still won't close, the owner decides.
   7. Write `chess-set.json` and copy `LICENSE`.
   8. Record the results in Appendix B.
 - **Publishing:** the package folder is zipped and attached to a GitHub release (§5.9). It is never part of the plugin.
@@ -711,16 +711,16 @@ These are the proposed workshop piece sizes from the build notes. They are not p
 
 ## Appendix B — Measured upstream Staunton models
 
-Measured from `Source/Staunton/*/*.STL` at commit `cef2c79` (binary STL, mm). Diameters are taken about the centre of each piece's base. The "Closed after weld" column is filled in by plan Phase 2.
+Measured from `Source/Staunton/*/*.STL` at commit `cef2c79` (binary STL, mm). Diameters are taken about the centre of each piece's base. The "Closed after weld" column was filled in by implementation plan Phase 2 (October 30, 2026), welding at 0.001 mm. The prepared package's measurements match the values in this table to 0.01 mm.
 
 | Piece | Triangles | Axial length | Base Ø | Swept Ø | Top Ø (last 1 mm) | Source frame | Closed after weld |
 |---|---:|---:|---:|---:|---:|---|---|
-| King | 18,964 | 78.00 | 30.00 | 30.00 | 10.59 | Y-up, axis at (X 15, Z 15) | pending Phase 2 |
-| Queen | 23,768 | 68.00 | 30.00 | 30.00 | 4.15 | Y-up, axis at (X 80.9, Z 15) | pending Phase 2 |
-| Bishop | 11,898 | 59.00 | 30.03 | 30.03 | 3.97 | Y-up, axis at (X 15, Z 15) | pending Phase 2 |
-| Knight | 62,500 | 59.00 | 30.00 | 30.00 | 8.15 | Y-up, axis at (X 15, Z 15.75) | pending Phase 2 |
-| Rook | 11,478 | 49.00 | 30.03 | 30.03 | 16.03 | Y-up, axis at (X 15, Z 15) | pending Phase 2 |
-| Pawn | 9,398 | 43.00 | 24.00 | 24.00 | 6.38 | Y-up, axis at (X 12, Z 12) | pending Phase 2 |
+| King | 18,964 | 78.00 | 30.00 | 30.00 | 10.59 | Y-up, axis at (X 15, Z 15) | yes |
+| Queen | 23,768 | 68.00 | 30.00 | 30.00 | 4.15 | Y-up, axis at (X 80.9, Z 15) | yes |
+| Bishop | 11,898 | 59.00 | 30.03 | 30.03 | 3.97 | Y-up, axis at (X 15, Z 15) | yes |
+| Knight | 62,500 | 59.00 | 30.00 | 30.00 | 8.15 | Y-up, axis at (X 15, Z 15.75) | yes, after the tool filled 1 hole of 6 edges |
+| Rook | 11,478 | 49.00 | 30.03 | 30.03 | 16.03 | Y-up, axis at (X 15, Z 15) | yes |
+| Pawn | 9,398 | 43.00 | 24.00 | 24.00 | 6.38 | Y-up, axis at (X 12, Z 12) | yes |
 
 One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as ASCII.
 
@@ -794,7 +794,7 @@ All paths are relative to `Chess-Set-Creator/`. This list is the only file tree;
 | `com.infield.chessset/config.html` | N | Root `<div class="csc-shell">` plus the Detail 2 loader. `__INITIAL_CONFIG__` is not used. |
 | `com.infield.chessset/lib/app.js` | N (built) | Output of `build.mjs`; never edited by hand. |
 | `com.infield.chessset/icon.svg`, `README.md`, `CHANGELOG.md`, `LICENSE`, `LICENSE-GPL-3.0` | N | The icon is a pawn silhouette in explicit colours, as AAxis `icon.svg` does it. It can't use `currentColor`, because ncSender draws icons with `<img>` (§12). The README covers install, getting the package (§5.9), import, export and Download files. CHANGELOG uses the AAxis format. `LICENSE` and `LICENSE-GPL-3.0` are copies of the repository's dual-licence files (D11). |
-| `src/config.js` | N | Constants: `PLUGIN_ID`, `EXPORT_ROOT = 'chess set'`, `PACKAGE_ROOT` (D6), `DEFAULT_MACHINE` (§5.1 machine defaults), `NECK_OVERLAP = 0.5`, `NECK_SEGMENTS = 64`, `WELD_TOL = 0.001`, `WELD_RETRY_TOL = 0.01`, `FRAME_TOL = 0.1`, `BAND = 1.0`, `PROFILE_STEP = 0.5`, `MAX_COPIES = 999`. |
+| `src/config.js` | N | Constants: `PLUGIN_ID`, `EXPORT_ROOT = 'chess set'`, `PACKAGE_ROOT` (D6), `DEFAULT_MACHINE` (§5.1 machine defaults), `NECK_OVERLAP = 0.5`, `NECK_SEGMENTS = 64`, `WELD_TOL = 0.001`, `FRAME_TOL = 0.1`, `BAND = 1.0`, `PROFILE_STEP = 0.5`, `MAX_COPIES = 999`. |
 | `src/units.js` | N | P4.1 |
 | `src/stl.js` | N | P4.2 |
 | `src/measure.js` | N | P4.3 |
@@ -1194,7 +1194,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 1. Rotate Y-up to the X axis: `(x, y, z) → (y, −x, z)`.
 2. Translate so the base-band centre is on the axis and `minX = 0`.
 3. **Knight only:** rotate about X so that the mean Y/Z of its top 40% points to +Z. `--knight-flip` adds 180°. The tool prints the angle.
-4. Weld at `WELD_TOL` and check closure. If the mesh isn't closed, retry at `WELD_RETRY_TOL`, rebuild from the welded mesh, and check again at `WELD_TOL`. If it is still open, stop with *"<Piece> is not closed (<k> open edges): repair it in MeshLab (Filters → Cleaning and Repairing → Close Holes), then rerun with --replace <Piece>=<repaired.stl>"*, and write nothing. If MeshLab can't close it either, the owner decides.
+4. Weld at `WELD_TOL` and check closure. If the mesh isn't closed and its holes are small and simple (at most 4 boundary loops of at most 24 edges each, and no edge shared by more than two faces), fill each hole with a fan of triangles from the hole's centroid, wound to match the faces around it, and check again. A looser re-weld is not used: on the Staunton knight, a 0.01 mm weld merged nearby vertices into 391 open edges. If the mesh is still open, stop with *"<Piece> is not closed (<k> open edges): repair it in MeshLab (Filters → Cleaning and Repairing → Close Holes), then rerun with --replace <Piece>=<repaired.stl>"*, and write nothing. If MeshLab can't close it either, the owner decides.
 5. Measure the piece and write `<role>.stl` as binary STL.
 
 **Then:**
@@ -1204,7 +1204,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 
 **Other modes:**
 - `--measure` prints the axial length and the base, swept and top diameters. With `--x0` and `--x1`, it keeps only the triangles whose vertices all lie in that range.
-- `--svg` writes a side view and an end view of the knight to `<outDir>/knight-check.svg`, for checking the facing direction.
+- `--svg` writes a side view and an end view of the knight to `<outDir>/knight-check.svg`, for checking the facing direction. Every triangle is drawn, shaded and depth-sorted. The file is about 9 MB, is git-ignored, and is not part of the published package.
 
 #### P4.12 Mock ncSender, harness and UI check
 

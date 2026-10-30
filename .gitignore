@@ -6,3 +6,4 @@ _to_delete/
 desktop.ini
 node_modules/
 tests/fixtures/bad-packages/
+packages/*/knight-check.svg

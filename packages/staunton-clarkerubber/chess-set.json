@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "id": "staunton-clarkerubber",
+  "version": "1.0.0",
+  "name": "Staunton (clarkerubber)",
+  "author": "clarkerubber; prepared by Marc Infield",
+  "source": "https://github.com/clarkerubber/Staunton-Pieces/tree/cef2c79/Source/Staunton",
+  "license": "MIT",
+  "licenseFile": "LICENSE",
+  "attribution": "Copyright (c) 2014 clarkerubber",
+  "units": "mm",
+  "frame": "x-axis-base-at-origin-v1",
+  "pieces": {
+    "king": {
+      "file": "king.stl",
+      "axialLength": 78,
+      "baseDiameter": 30,
+      "sweptDiameter": 30,
+      "topDiameter": 10.59
+    },
+    "queen": {
+      "file": "queen.stl",
+      "axialLength": 68,
+      "baseDiameter": 30,
+      "sweptDiameter": 30,
+      "topDiameter": 4.15
+    },
+    "bishop": {
+      "file": "bishop.stl",
+      "axialLength": 59,
+      "baseDiameter": 30.03,
+      "sweptDiameter": 30.03,
+      "topDiameter": 3.97
+    },
+    "knight": {
+      "file": "knight.stl",
+      "axialLength": 59,
+      "baseDiameter": 30,
+      "sweptDiameter": 30,
+      "topDiameter": 8.15
+    },
+    "rook": {
+      "file": "rook.stl",
+      "axialLength": 49,
+      "baseDiameter": 30.03,
+      "sweptDiameter": 30.03,
+      "topDiameter": 16.03
+    },
+    "pawn": {
+      "file": "pawn.stl",
+      "axialLength": 43,
+      "baseDiameter": 24,
+      "sweptDiameter": 24,
+      "topDiameter": 6.38
+    }
+  },
+  "notes": "Knight: Rotary CAM indexed pass reaches part of the jaw/mane only; hand finishing expected."
+}
