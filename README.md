@@ -25,3 +25,9 @@ A rotary-machining helper for ncSender (Sienci AltMill with the Vortex rotary ax
 | Agent instructions | [`CLAUDE.md`](CLAUDE.md) |
 
 Related: [`../AAxis/`](../AAxis/), the A-Axis Tools plugin, whose conventions this project follows.
+
+## License
+
+GPL-3.0. See [`LICENSE`](LICENSE). This matches AAxis and ncCAM (spec decision D11).
+
+The Staunton chess models (clarkerubber/Staunton-Pieces) are a separate download under their own MIT licence, and are never part of the plugin. Exports carry their attribution in `LICENSE-models.txt` (spec §5.8).
