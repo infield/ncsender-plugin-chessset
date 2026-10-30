@@ -54,7 +54,8 @@ EGM writes its reports under fixed names (`zoom_out_report.md`, `critic_report.m
 
 ## Git
 
-- **Repo:** local git, branch `main`, the same set-up as AAxis. No GitHub remote yet.
+- **Repo:** git, branch `main`, the same set-up as AAxis. Remote `origin` = https://github.com/infield/ncsender-plugin-chessset (**private** for now; it becomes public at the M1 release, per DISC-8). Use the HTTPS remote, as AAxis does; this machine has no SSH key for GitHub.
+- **Pushing:** push only when the owner asks.
 - **Google Drive:** the repo lives on a Drive shared drive. Git needs delete permission on the folder to clean up its lock and temp files (see `../AAxis/CLAUDE.md`, Git / releases).
 - **Moves:** use `git mv` so history follows the file.
 - **Commits:** commit only when asked.
