@@ -1,0 +1,8 @@
+.DS_Store
+._*
+.Icon?
+*.zip
+_to_delete/
+desktop.ini
+node_modules/
+.mock-store.json
