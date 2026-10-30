@@ -756,7 +756,7 @@ One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as A
 | D7 | Lengths in the planner | Integer micrometres (`Math.round(mm × 1000)`). | Equal-length pieces (the bishop and the knight) must compare exactly equal. |
 | D8 | Rounding | **Displays:** half up; mm to 1 decimal, inches to 2. **Minimums:** rounded up. **Maximums:** rounded down. **Input fields:** mm to 2 decimals and inches to 3, trailing zeros trimmed. | §5.4. Input fields are never re-read from their displayed text (P4.10). |
 | D9 | Dependencies | `devDependencies`: `esbuild ^0.28.2` and `playwright-core ^1.64.1`. No runtime libraries. STL reading and writing are our own code. | §7 rejects three.js, mesh kernels and fflate. |
-| D10 | Tests | `node --test tests/*.test.js`, on Node ≥ 20. | Same as ncCAM. |
+| D10 | Tests | `node --test tests/*.test.js`, on Node 22 (pinned to 22.22.0 in `.nvmrc`; `engines` ≥ 22). | Same test runner as ncCAM. Node 22 matches the Node bundled in the ncSender 2.0.27x desktop app (Electron 38; owner-reported 22.22.0). |
 | D11 | Plugin licence | GPL-3.0. [C] (DISC-8) | Matches AAxis and ncCAM. |
 | D12 | Versioning | The manifest starts at `0.1.0`. `build.sh` bumps the patch number unless given `--no-bump`. The first build uses `--no-bump` and ships 0.1.0. The planning milestone ships as 0.1.x. After the 12 in test blank is cut, set `0.2.0` by hand and build with `--no-bump`. Every build needs a CHANGELOG entry. | AAxis `CLAUDE.md` item 5. Publishing 0.1.x publicly departs from AAxis's "1.0.0 when shared publicly"; the owner chose public releases from M1 (DISC-8). |
 | D13 | Host version floor and updates | `minAppVersion "2.0.88"`, `platforms {"v2":"2.0.88","pro-v2":"2.0.149"}`. `repository: "https://github.com/infield/ncsender-plugin-chessset"`, so ncSender's update check finds releases. | ncCAM's version values. DISC-5 may change the platforms. DISC-8 for the repository. |
@@ -786,7 +786,8 @@ All paths are relative to `Chess-Set-Creator/`. This list is the only file tree;
 | File | Status | Contract |
 |---|---|---|
 | `.gitignore` | M | Already has `node_modules/`. Add `tests/fixtures/bad-packages/` (generated, about 70 MB). Remove the stale `.mock-store.json` entry, since the mock keeps its store in memory. |
-| `package.json` | N | `"type":"module"`, `private:true`, `license:"GPL-3.0"`, `devDependencies` per D9. Scripts: `build`, `test`, `fixtures`, `prepare-package`, `mock`, `ui-check`. |
+| `.nvmrc` | N | `22.22.0` (D10). |
+| `package.json` | N | `"type":"module"`, `private:true`, `license:"GPL-3.0"`, `engines.node: ">=22"`, `devDependencies` per D9. Scripts: `build`, `test`, `fixtures`, `prepare-package`, `mock`, `ui-check`. |
 | `build.mjs` | N | Bundles `src/index.js` into `com.infield.chessset/lib/app.js` (IIFE, browser target, minified). Defines `__BUILD__ = <version>-<timestamp>` and writes the same value into `config.html`'s `BUILD` line. Prints the bundle size. |
 | `build.sh` | N | Adapted from AAxis. Order: bump the patch number with python3 (skipped with `--no-bump`), run `node build.mjs`, delete old ZIPs, zip `com.infield.chessset/` (excluding `.DS_Store`), print a CHANGELOG reminder. |
 | `com.infield.chessset/manifest.json` | N | `id`, `name:"Chess Set Creator"`, `version`, `minAppVersion`, `platforms`, `repository` (D13), `author`, `description`, `configUi:"config.html"`, `icon`, `category:"utility"`, `events:[]`, `permissions:["gcode.modify"]`, and `toolMenu:[{"id":"open-config","label":"Chess Set Creator","icon":"icon.svg","clientOnly":true}]`. No `entry` field. |

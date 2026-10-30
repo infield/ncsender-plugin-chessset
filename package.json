@@ -1,0 +1,24 @@
+{
+  "name": "ncsender-plugin-chessset",
+  "version": "0.1.0",
+  "description": "ncSender Chess Set Creator plugin: plans chess pieces onto rotary turning blanks and exports one STL per blank for Rotary CAM",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/*.test.js",
+    "fixtures": "node tools/make-fixtures.mjs",
+    "prepare-package": "node tools/prepare-package.mjs",
+    "mock": "node tools/mock-ncsender.mjs",
+    "ui-check": "node tools/ui-check.mjs"
+  },
+  "author": "Marc Infield",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.64.1"
+  }
+}

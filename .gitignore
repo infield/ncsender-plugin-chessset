@@ -5,4 +5,4 @@
 _to_delete/
 desktop.ini
 node_modules/
-.mock-store.json
+tests/fixtures/bad-packages/
