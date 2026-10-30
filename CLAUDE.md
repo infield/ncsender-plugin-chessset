@@ -13,7 +13,8 @@ EGM artifact directory: docs/designs/egm/reviews/current
 | Requirements, technical spec, implementation plan | `docs/designs/egm/chess-set-creator.md`. This is the **only** authoritative spec. Product requirements (§1–§5), architecture (§6–§8) and the plan (`## Detailed Implementation Plan`, P1–P6) are all in this one file. |
 | Open review findings and owner decisions still pending | `docs/designs/egm/reviews/rev7/consolidated_review_report.md` |
 | Owner decisions made so far | `docs/product/decisions/product-decisions.md` |
-| Workflow and stage ownership | `WORKFLOW.md` |
+| Workflow, stage ownership, list of authoritative documents | `WORKFLOW.md` |
+| Feature → spec section → status | `docs/product/requirements/feature-index.md` |
 | ncSender plugin model, shop machine, build and release conventions | `../AAxis/CLAUDE.md` (sibling repo; read it before writing plugin code) |
 
 Paths in the spec are relative to this folder (the project root), not to the spec file.

@@ -8,10 +8,11 @@ This page is an index. The requirements live in the spec, [`docs/designs/egm/che
 |---|---|---|
 | Problem statement | Spec §1 | Laying 32 pieces out across turning blanks by hand in CAD, and redoing it whenever the size or stock changes |
 | Goals and non-goals (v1) | Spec §2 | Six goals, all tagged [C]. Non-goals include G-code generation, machine motion, automatic shrinking, weight pockets and promotion queens |
-| Users | Spec §4 | "One user: Marc, on ncSender 2.x Pro … working at the shop machine." |
+| Users | Spec §4 | "One user: Marc, on ncSender 2.x Pro … working at the shop machine." **Superseded in intent by the 2026-10-30 audience decision below. The spec text is unchanged until DISC-1 is decided.** |
 | Requirements | Spec §5.1–§5.11 | Each item is tagged [C] confirmed, [P] proposed, [O-n] open, or [v2] |
 | Acceptance criteria | Spec §9 | AC-PKG, AC-SEC, AC-IN, AC-SIZE, AC-FIT, AC-PLAN, AC-UI, AC-EXP |
 | Open questions | Spec §13 | O-1 … O-13 |
+| Feature → spec index, with status | [`docs/product/requirements/feature-index.md`](docs/product/requirements/feature-index.md) | F1 … F12 |
 | Owner decisions so far | [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md) | |
 | Decisions pending from the last review | [`docs/designs/egm/reviews/rev7/consolidated_review_report.md`](docs/designs/egm/reviews/rev7/consolidated_review_report.md), Part A | A1–A8 |
 
@@ -20,16 +21,26 @@ This page is an index. The requirements live in the spec, [`docs/designs/egm/che
 | Artifact | Status |
 |---|---|
 | Product vision statement | MISSING |
-| Target audience beyond the owner | MISSING. See the open question below |
+| Target audience definition (who, which machines and ncSender versions) | MISSING. Direction decided (other ncSender rotary users); no profile yet |
 | Personas, jobs-to-be-done, ideal customer profile | MISSING (`docs/product/personas/`, `docs/research/`) |
 | Success metrics (outcomes, not acceptance tests) | MISSING. For example, time saved or stock wasted compared with manual layout |
 | Competitive or alternatives analysis (manual CAD layout, other tools) | MISSING |
 | Dated roadmap or milestones | MISSING. See [`ROADMAP.md`](ROADMAP.md) for what is documented |
 
-## Open product question (owner decision)
+## Audience decision (2026-10-30)
 
-**Is this a personal shop tool, or meant for other ncSender rotary users?**
-- **What the spec says now:** §4 names one user. Several confirmed decisions belong to this shop: maple and walnut, its two jaw sets, and the 36 in maximum blank.
-- **What points the other way:** v2 GitHub distribution (§5.9) implies other users.
+**The product is for other ncSender rotary users, not only the owner's shop.** It's recorded in [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md).
 
-The answer decides whether audience research is worth doing now. It may also mean reopening those shop-specific [C] items. This is logged in [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md) as pending.
+The spec still describes one user and one shop. Eight conflicts are logged for owner decision in [`docs/product/decisions/discrepancies.md`](docs/product/decisions/discrepancies.md):
+- DISC-1: the user description
+- DISC-2: fixed wood species
+- DISC-3: the owner's jaw sets
+- DISC-4: the 36 in default
+- DISC-5: supported ncSender versions
+- DISC-6: how other users get a model package
+- DISC-7: depending on unreleased Rotary CAM
+- DISC-8: licence and release channel
+
+The spec is unchanged until those are decided.
+
+Product discovery is now worth doing. The aim is to define who these users are, which machines, rotary units and ncSender versions they run, and what they use for rotary CAM. DISC-1, DISC-5 and DISC-7 depend on that research.

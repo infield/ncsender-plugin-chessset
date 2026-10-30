@@ -1,6 +1,22 @@
 # Workflow
 
-Work moves through four stages. Each stage owns its own documents. A stage can be skipped when its entry question is already answered. This is a one-person shop tool, so not every change needs every stage.
+Work moves through four stages. Each stage owns its own documents. A stage can be skipped when its entry question is already answered, so not every change needs every stage.
+
+## Authoritative documents
+
+| Question | Authoritative source | Owner stage |
+|---|---|---|
+| What must the plugin do, and how is it designed and planned? | [`docs/designs/egm/chess-set-creator.md`](docs/designs/egm/chess-set-creator.md). This is the only spec: requirements §1–§5, architecture §6–§8, implementation plan P1–P6. | EGM (requirements content set by product management) |
+| Which design findings are open, and which owner decisions do they need? | [`docs/designs/egm/reviews/rev7/consolidated_review_report.md`](docs/designs/egm/reviews/rev7/consolidated_review_report.md) | EGM |
+| What has the owner decided, and what is pending? | [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md) | Product management |
+| Where does new evidence conflict with the spec? | [`docs/product/decisions/discrepancies.md`](docs/product/decisions/discrepancies.md) | Product management |
+| Which spec section covers a feature, and what is its status? | [`docs/product/requirements/feature-index.md`](docs/product/requirements/feature-index.md). This is an index only; the spec wins any disagreement. | Product management |
+| What did each review round say, and against which spec text? | [`docs/designs/egm/reviews/INDEX.md`](docs/designs/egm/reviews/INDEX.md) and `docs/designs/egm/history/` (read-only) | EGM |
+| How do plugins work on ncSender, and what are the shop conventions? | [`../AAxis/CLAUDE.md`](../AAxis/CLAUDE.md) (sibling repo) | Engineering |
+
+Everything else (`PRODUCT.md`, `ROADMAP.md`, `README.md`, the `docs/**/README.md` files) is an index that links to these sources and does not restate them.
+
+## Stages
 
 | Stage | Owns | Tools | Starts when | Hands off when | Writes to |
 |---|---|---|---|---|---|
@@ -15,19 +31,8 @@ Work moves through four stages. Each stage owns its own documents. A stage can b
 2. **Discrepancies.** Record each one in `docs/product/decisions/discrepancies.md` with: date, source, spec section, the conflict, the options. Leave the spec unchanged and ask the owner.
 3. **One source per fact.** Link to spec sections; don't copy them.
 
-## Feature status (as of the October 30, 2026 audit)
+## Feature status
 
-| Feature | Status |
-|---|---|
-| Sizing, stock fit, blank planning (spec §5.2–§5.4) | EGM review needed (minor fixes) |
-| Package import (§5.6–§5.7) | Product decision needed (Part A3, A4) |
-| Prepared Staunton package (§10) | EGM review needed (mesh-repair procedure) |
-| Export geometry and supports (§5.5) | Discovery needed: technical; Phase 0 Rotary CAM test |
-| File Manager export (§5.8) | Product decision needed (A2), then Phase 0 |
-| Rotary CAM sidecar (§5.11) | Product decision needed (A5); O-13 is external |
-| Plan UI and preview (§6) | EGM review needed |
-| Plugin shell, build, release (§6, P1–P2) | EGM review needed; licence D11 pending |
-| Distribution (§5.9, v2) | Discovery needed (audience) |
-| Cut-progress tracking (v2) | Discovery needed |
+The status of each feature, with its spec sections, acceptance criteria, plan phase and open findings, is kept in one place: [`docs/product/requirements/feature-index.md`](docs/product/requirements/feature-index.md). No feature is in implementation, ready for validation, or complete.
 
-No feature is in implementation, ready for validation, or complete.
+**Audience (decided 2026-10-30): other ncSender rotary users.** Discovery is now active work. The shop-specific conflicts are in `docs/product/decisions/discrepancies.md` (DISC-1 … DISC-8).
