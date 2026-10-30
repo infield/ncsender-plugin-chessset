@@ -22,7 +22,11 @@ These come from spec, Detailed Implementation Plan, P3, which holds each phase's
 
 **Version rule** (plan D12): the plugin stays at `0.1.x` and moves to `0.2.0` once a 12 in blank has been cut end to end.
 
-**Pending (owner decision A6 in the Rev 7 consolidated review):** whether Phases 1–4 ship first as a planning-only milestone, before the Rotary CAM answers come in.
+**Milestones** (owner decision A6; plan P3):
+- **M1, planning:** Phases 1–4. Ships as 0.1.x and does not depend on Rotary CAM.
+- **M2, export:** Phases 5–6, after the Phase 0 Rotary CAM test. Reaches 0.2.0 once the test blank is cut.
+
+Release channel (DISC-8): GitHub releases of `infield/ncsender-plugin-chessset`, under GPL-3.0. Creating that public repository needs owner approval at M1.
 
 ## v2: documented intent
 

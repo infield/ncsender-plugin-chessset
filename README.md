@@ -1,13 +1,13 @@
 # Chess Set Creator (ncSender plugin)
 
-**Status: specification stage. No code yet.** The spec is at Revision 7. Its last full EGM review (October 30, 2026) is complete. The findings are not yet resolved, and several owner decisions are pending.
+**Status: specification stage. No code yet.** The spec is at Revision 8, which applies the owner's decisions and the fixes from the Revision 7 review. One EGM re-review (Stages 7 and 9) is pending.
 
 ## What it will do
 
 A rotary-machining helper for ncSender (Sienci AltMill with the Vortex rotary axis):
 1. Scale a prepared six-piece chess model set from one setting, the queen base diameter.
 2. Check that each piece fits the stock.
-3. Work out the fewest turning blanks for a full side (maple for light, walnut for dark).
+3. Work out the fewest turning blanks for each side (light and dark), in whatever woods the user chooses.
 4. Write one STL per blank into the ncSender File Manager for the Rotary CAM plugin to machine.
 
 ## Where things are

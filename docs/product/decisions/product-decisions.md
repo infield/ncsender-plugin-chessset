@@ -20,20 +20,20 @@ This log holds decisions made by the owner, Marc Infield. The October 30, 2026 e
 | 2026-10-30 | For now, stock size and part placement are set in Rotary CAM. The plugin writes a per-blank sidecar describing orientation and stock | Spec §5.11 |
 | 2026-10-30 | Implementation plan approved, except D11 (licence). *The Rev 7 review flags this status as contradicting the open findings (X-B1).* | Spec plan "Status" |
 | 2026-10-30 | Reorganize the project into the current layout under local git, set up like AAxis | This repo's git history |
-| 2026-10-30 | **Audience: the product is for other ncSender rotary users, not only the owner's shop.** The spec still describes one user (§4), so this is not yet reflected there; the conflicts are logged as DISC-1 … DISC-8 in [`discrepancies.md`](discrepancies.md) | Owner, in the working session; spec unchanged |
-| 2026-10-30 | DISC-2: generic light/dark sides; no species names in file names | [`discrepancies.md`](discrepancies.md); spec revision pending |
-| 2026-10-30 | DISC-3: jaw ranges become editable machine settings (Vortex defaults); the check still blocks | same |
-| 2026-10-30 | DISC-4: first-run setup asks new users for their machine settings | same |
-| 2026-10-30 | DISC-6: the prepared package is published as a GitHub release ZIP for manual import; in-plugin download stays v2 | same |
-| 2026-10-30 | DISC-8: GPL-3.0 (closes D11), public repo `infield/ncsender-plugin-chessset`, GitHub releases, `repository` field. Creating the repo needs separate approval | same |
-| 2026-10-30 | A1: build only the support mode the Phase 0 test selects; remove the other from the spec | [`rev7/consolidated_review_report.md`](../../designs/egm/reviews/rev7/consolidated_review_report.md) Part A; spec revision pending |
-| 2026-10-30 | A2: if a File Manager save fails, offer each blank STL and `layout.json` as a plain browser download. No ZIP and no fflate | same |
-| 2026-10-30 | A3: import once and store the package in the hidden File Manager folder (as specified) | same |
-| 2026-10-30 | A4: minimal checks on import in v1 (parse, measure, check the frame). Closed-mesh and declared-vs-measured checks go in the packaging tool; SHA-256 moves to v2 | same |
-| 2026-10-30 | A5: **keep §5.11 as written**, including the general format and the reader rules. Review findings Z-M6 and C7-M4 are **accepted as a trade-off by the owner**; don't raise them again | same |
-| 2026-10-30 | A6: the first milestone is planning only (plan Phases 1–4); export follows Phase 0 | same |
-| 2026-10-30 | A7: mm-only packages in v1; inch packages move to v2 | same |
-| 2026-10-30 | A8: rewrite plan P4 as module contracts plus the P5 test expectations; keep a single file tree | same |
+| 2026-10-30 | **Audience: the product is for other ncSender rotary users, not only the owner's shop.** The spec still describes one user (§4), so this is not yet reflected there; the conflicts are logged as DISC-1 … DISC-8 in [`discrepancies.md`](discrepancies.md) | Owner, in the working session; recorded in spec Rev 8 §4 |
+| 2026-10-30 | DISC-2: generic light/dark sides; no species names in file names | [`discrepancies.md`](discrepancies.md); written into spec Rev 8 |
+| 2026-10-30 | DISC-3: jaw ranges become editable machine settings (Vortex defaults); the check still blocks | same; written into Rev 8 |
+| 2026-10-30 | DISC-4: first-run setup asks new users for their machine settings | same; written into Rev 8 |
+| 2026-10-30 | DISC-6: the prepared package is published as a GitHub release ZIP for manual import; in-plugin download stays v2 | same; written into Rev 8 |
+| 2026-10-30 | DISC-8: GPL-3.0 (closes D11), public repo `infield/ncsender-plugin-chessset`, GitHub releases, `repository` field. Creating the repo needs separate approval | same; written into Rev 8 |
+| 2026-10-30 | A1: build only the support mode the Phase 0 test selects; remove the other from the spec | [`rev7/consolidated_review_report.md`](../../designs/egm/reviews/rev7/consolidated_review_report.md) Part A; written into spec Rev 8 |
+| 2026-10-30 | A2: if a File Manager save fails, offer each blank STL and `layout.json` as a plain browser download. No ZIP and no fflate | same; written into Rev 8 |
+| 2026-10-30 | A3: import once and store the package in the hidden File Manager folder (as specified) | same; written into Rev 8 |
+| 2026-10-30 | A4: minimal checks on import in v1 (parse, measure, check the frame). Closed-mesh and declared-vs-measured checks go in the packaging tool; SHA-256 moves to v2 | same; written into Rev 8 |
+| 2026-10-30 | A5: **keep §5.11 as written**, including the general format and the reader rules. Review findings Z-M6 and C7-M4 are **accepted as a trade-off by the owner**; don't raise them again | same; written into Rev 8 |
+| 2026-10-30 | A6: the first milestone is planning only (plan Phases 1–4); export follows Phase 0 | same; written into Rev 8 |
+| 2026-10-30 | A7: mm-only packages in v1; inch packages move to v2 | same; written into Rev 8 |
+| 2026-10-30 | A8: rewrite plan P4 as module contracts plus the P5 test expectations; keep a single file tree | same; written into Rev 8 |
 
 ## Pending
 

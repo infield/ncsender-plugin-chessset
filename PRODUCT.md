@@ -8,13 +8,13 @@ This page is an index. The requirements live in the spec, [`docs/designs/egm/che
 |---|---|---|
 | Problem statement | Spec §1 | Laying 32 pieces out across turning blanks by hand in CAD, and redoing it whenever the size or stock changes |
 | Goals and non-goals (v1) | Spec §2 | Six goals, all tagged [C]. Non-goals include G-code generation, machine motion, automatic shrinking, weight pockets and promotion queens |
-| Users | Spec §4 | "One user: Marc, on ncSender 2.x Pro … working at the shop machine." **Superseded in intent by the 2026-10-30 audience decision below. The spec text is unchanged until DISC-1 is decided.** |
+| Users | Spec §4 | "One user: Marc, on ncSender 2.x Pro … working at the shop machine." Rev 8 §4 now records the audience decision and treats the owner's shop as the first user and test site. Who the users are is still open (DISC-1). |
 | Requirements | Spec §5.1–§5.11 | Each item is tagged [C] confirmed, [P] proposed, [O-n] open, or [v2] |
 | Acceptance criteria | Spec §9 | AC-PKG, AC-SEC, AC-IN, AC-SIZE, AC-FIT, AC-PLAN, AC-UI, AC-EXP |
 | Open questions | Spec §13 | O-1 … O-13 |
 | Feature → spec index, with status | [`docs/product/requirements/feature-index.md`](docs/product/requirements/feature-index.md) | F1 … F12 |
 | Owner decisions so far | [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md) | |
-| Decisions pending from the last review | [`docs/designs/egm/reviews/rev7/consolidated_review_report.md`](docs/designs/egm/reviews/rev7/consolidated_review_report.md), Part A | A1–A8 |
+| Rev 7 review and its decisions | [`docs/designs/egm/reviews/rev7/consolidated_review_report.md`](docs/designs/egm/reviews/rev7/consolidated_review_report.md) | A1–A8 decided and written into Rev 8 |
 
 ## MISSING
 
@@ -41,6 +41,6 @@ The spec still describes one user and one shop. Eight conflicts are logged for o
 - DISC-7: depending on unreleased Rotary CAM
 - DISC-8: licence and release channel
 
-The spec is unchanged until those are decided.
+DISC-2, 3, 4, 6 and 8 were decided on 2026-10-30 and are written into spec Revision 8. DISC-1, 5 and 7 are still open.
 
 Product discovery is now worth doing. The aim is to define who these users are, which machines, rotary units and ncSender versions they run, and what they use for rotary CAM. DISC-1, DISC-5 and DISC-7 depend on that research.
