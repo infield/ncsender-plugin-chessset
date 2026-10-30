@@ -11,7 +11,7 @@ EGM artifact directory: docs/designs/egm/reviews/current
 | What | Where |
 |---|---|
 | Requirements, technical spec, implementation plan | `docs/designs/egm/chess-set-creator.md`. This is the **only** authoritative spec. Product requirements (§1–§5), architecture (§6–§8) and the plan (`## Detailed Implementation Plan`, P1–P6) are all in this one file. |
-| Open review findings and owner decisions still pending | `docs/designs/egm/reviews/rev7/consolidated_review_report.md` |
+| Latest review round (resolved in Rev 9) and review history | `docs/designs/egm/reviews/rev8/`, `docs/designs/egm/reviews/INDEX.md` |
 | Owner decisions made so far | `docs/product/decisions/product-decisions.md` |
 | Workflow, stage ownership, list of authoritative documents | `WORKFLOW.md` |
 | Feature → spec section → status | `docs/product/requirements/feature-index.md` |

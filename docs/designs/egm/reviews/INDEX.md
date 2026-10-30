@@ -19,8 +19,9 @@ Spec snapshots live in [`../history/`](../history/). Each round reviewed the sna
 | rev6 | Rev 6, 1,301 lines ([`history/rev6.md`](../history/rev6.md)) | 9 Re-audit | [`rev6/implementation_readiness_report.md`](rev6/implementation_readiness_report.md) | `implementation_readiness_report.md` (the Rev 6 one) | 11 Majors (R-M1 … R-M11) accepted and left open. Resolved in Rev 8 |
 | rev7 | Rev 7, 1,390 lines ([`history/rev7.md`](../history/rev7.md)) | 5–9 full run | [`rev7/`](rev7/): `zoom_out_report.md`, `comprehension_report.md`, `critic_report.md`, `intermediate_zoom_out_report.md`, `implementation_readiness_report.md` | same names at the project root | 3 🔴, 26 🟡. Applied in Rev 8 |
 | rev7 | Rev 7 | Consolidated | [`rev7/consolidated_review_report.md`](rev7/consolidated_review_report.md) | `consolidated_review_report.md` | Part A: owner decisions A1–A8 (decided 2026-10-30). Part B: fixes. Both applied in Rev 8 |
-| rev8 | Rev 8, 1,363 lines ([`history/rev8.md`](../history/rev8.md)) | 7 Critic re-review | [`rev8/critic_report.md`](rev8/critic_report.md) | — | 0 🔴, 7 🟡. **Not yet resolved** |
-| rev8 | Rev 8 | 9 Implementation readiness re-review | [`rev8/implementation_readiness_report.md`](rev8/implementation_readiness_report.md) | — | 2 🔴, 8 🟡, all local text fixes. **Not yet resolved**. Both stages have now used their one re-review |
+| rev8 | Rev 8, 1,363 lines ([`history/rev8.md`](../history/rev8.md)) | 7 Critic re-review | [`rev8/critic_report.md`](rev8/critic_report.md) | — | 0 🔴, 7 🟡. Resolved in Rev 9 |
+| rev8 | Rev 8 | 9 Implementation readiness re-review | [`rev8/implementation_readiness_report.md`](rev8/implementation_readiness_report.md) | — | 2 🔴, 8 🟡, all local text fixes. Resolved in Rev 9. Both stages have now used their one re-review |
+| — | Rev 9, 1445 lines ([`history/rev9.md`](../history/rev9.md)) | not re-reviewed (cap reached) | — | — | Accepted residual nits are listed in [`history/CHANGES.md`](../history/CHANGES.md) |
 
 **Line numbers.** Report line numbers refer to the snapshot of the revision they reviewed, not to the live spec. Since Revision 8 the live spec differs throughout, so read the Rev 7 reports against [`history/rev7.md`](../history/rev7.md). Revision 8 is snapshotted as [`history/rev8.md`](../history/rev8.md), and the revision history is in [`history/CHANGES.md`](../history/CHANGES.md).
 

@@ -1,6 +1,6 @@
 # Chess Set Creator (ncSender plugin)
 
-**Status: specification stage. No code yet.** The spec is at Revision 8, which applies the owner's decisions and the fixes from the Revision 7 review. One EGM re-review (Stages 7 and 9) is pending.
+**Status: specification stage. No code yet.** The spec is at Revision 9. It has been reviewed and its findings resolved, and milestone M1 (planning) is ready for engineering. Export (M2) waits for the Phase 0 Rotary CAM test.
 
 ## What it will do
 
