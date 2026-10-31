@@ -1,0 +1,18 @@
+{
+  "format": "chessset-library",
+  "formatVersion": 1,
+  "sets": [
+    {
+      "id": "staunton-clarkerubber",
+      "name": "Staunton (clarkerubber)",
+      "version": "0.1.0",
+      "tag": "staunton-clarkerubber-v0.1.0",
+      "path": "sets/staunton-clarkerubber",
+      "author": "clarkerubber; prepared by Marc Infield",
+      "license": "MIT",
+      "attribution": "Copyright (c) 2014 clarkerubber",
+      "source": "https://github.com/clarkerubber/Staunton-Pieces/tree/cef2c79/Source/Staunton",
+      "description": "Classic Staunton pieces. Beta: not yet cut and checked in the shop."
+    }
+  ]
+}

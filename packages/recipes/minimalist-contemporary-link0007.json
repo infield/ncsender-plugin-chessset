@@ -1,0 +1,50 @@
+{
+  "id": "minimalist-contemporary-link0007",
+  "version": "0.1.0",
+  "name": "Minimalist contemporary (link0007)",
+  "author": "link0007; prepared by Marc Infield",
+  "source": "https://www.thingiverse.com/thing:3049393",
+  "license": "CC BY-NC",
+  "attribution": "\"Minimalist contemporary chess set\" by link0007 on Thingiverse (thing:3049393)",
+  "notes": "Non-commercial use only (CC BY-NC). The weighting recess in each base can't be cut on a rotary axis, so bases come out solid. Knight: not round, so it is carved by indexed passes rather than turned; hand finishing expected.",
+  "up": "Z",
+  "sourceDir": "../../sources/thingiverse/3049393",
+  "licenseFiles": [
+    "LICENSE.txt",
+    "README.txt"
+  ],
+  "changes": "rotated so the piece lies along the X axis with its base at X = 0, centred on the axis, the knight turned so its face points +Z, and saved as binary STL in mm (shape and size unchanged); the 50 mm version is used.",
+  "pieces": {
+    "king": [
+      {
+        "file": "files/king_50mm.stl"
+      }
+    ],
+    "queen": [
+      {
+        "file": "files/queen_50mm.stl"
+      }
+    ],
+    "bishop": [
+      {
+        "file": "files/bishop_50mm.stl"
+      }
+    ],
+    "knight": [
+      {
+        "file": "files/knight__50mm.stl"
+      }
+    ],
+    "rook": [
+      {
+        "file": "files/rook_50mm.stl"
+      }
+    ],
+    "pawn": [
+      {
+        "file": "files/pawn_50mm.stl"
+      }
+    ]
+  },
+  "knightAngle": 92.24
+}

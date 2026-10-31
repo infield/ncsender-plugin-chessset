@@ -2,6 +2,13 @@
 
 Versioning: `0.1.x` while planning is built and tested. **Every build that gets zipped increments the patch number** (0.1.0 → 0.1.1 → …), and the ZIP is named with the version. Set `0.2.0` by hand once the 12 in test blank has been cut.
 
+## 0.1.8 — 2026-10-30 (beta)
+- **Browse library**: lists the sets in the chess-set library (github.com/infield/chessset-library) and installs one in a click; no download, unzip or folder import needed
+- Several sets can be installed; switch the one in use from the Chess set section
+- Connecting necks removed: exports have empty gaps between pieces, for Rotary CAM to support
+- Import package folder still works, for offline use and your own sets
+- The library now has five sets: Staunton, Dubrovnik I 1950, Minimal Look, Minimalist contemporary and Gothic (check each set's licence; two are non-commercial)
+
 ## 0.1.7 — 2026-10-30 (beta)
 - Export: **Export to File Manager** writes `chess set/<job name>/` (one STL per blank, a `.rotary.json` setup file each, `layout.json`, the model licence); a repeat export goes to a new `(2)` folder
 - **Download files**: the same files as separate downloads, one per click

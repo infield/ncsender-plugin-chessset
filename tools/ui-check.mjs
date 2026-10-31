@@ -7,7 +7,7 @@
 // sets, a real download and the running-job refusal.
 // --until=import stops after the import steps; --until=plan skips export.
 import { chromium } from 'playwright-core';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { startMock } from './mock-ncsender.mjs';
 
@@ -28,6 +28,21 @@ const page = await browser.newPage({ viewport: { width: 1400, height: 950 }, acc
 const problems = [];
 page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
 page.on('console', (m) => { if (m.type() === 'error') problems.push(`console error: ${m.text()} ${m.location().url || ''}`.trim()); });
+
+// The chess-set library on GitHub, served from this repository: the index
+// from tests/fixtures/library.json, set files from packages/<id>/.
+let libraryOnline = true;
+await page.route('https://raw.githubusercontent.com/**', (route) => {
+  if (!libraryOnline) return route.abort('internetdisconnected');
+  const url = new URL(route.request().url());
+  if (url.pathname === '/infield/chessset-library/main/library.json') {
+    return route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, body: readFileSync('tests/fixtures/library.json') });
+  }
+  const m = url.pathname.match(/^\/infield\/chessset-library\/[^/]+\/sets\/([a-z0-9-]+)\/(.+)$/);
+  const file = m && resolve('packages', m[1], decodeURIComponent(m[2]));
+  if (file && existsSync(file)) return route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, body: readFileSync(file) });
+  return route.fulfill({ status: 404, body: 'not found' });
+});
 
 let failed = false;
 const step = async (name, fn) => {
@@ -98,6 +113,27 @@ try {
     }
     const store = await (await fetch(mock.url + '__mock/store')).json();
     expect(Object.keys(store.files).length === 0, 'a bad package saved files');
+  });
+
+  await step('2a. library offline: Browse library says so and suggests a folder import', async () => {
+    libraryOnline = false;
+    await page.click('[data-act="browse"]');
+    await page.waitForSelector('[data-library-error]');
+    expect(/Can't reach the chess-set library .*import a package folder instead/.test(await text('[data-library-error]')), await text('[data-library-error]'));
+    libraryOnline = true;
+    // The aborted request is logged as a console error; that one is expected.
+    for (let i = problems.length - 1; i >= 0; i--) if (/ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(problems[i])) problems.splice(i, 1);
+  });
+
+  await step('2b. install Staunton from the library', async () => {
+    await page.click('[data-act="browse"]');
+    await page.waitForSelector('[data-lib-set="staunton-clarkerubber"] [data-install]');
+    await page.click('[data-lib-set="staunton-clarkerubber"] [data-install]');
+    await page.waitForSelector('[data-lib-set="staunton-clarkerubber"] [data-use-set]', { timeout: 60000 });
+    expect((await text('[data-lib-set="staunton-clarkerubber"] [data-use-set]')) === 'In use', 'not shown as in use');
+    expect((await text('[data-pkg="name"]')) === 'Staunton (clarkerubber)', 'package name not shown');
+    const files = Object.keys((await (await fetch(mock.url + '__mock/store')).json()).files);
+    expect(files.length === 8, files.join(', '));
   });
 
   await step('2. import the prepared package; it shows as installed', async () => {
@@ -201,6 +237,17 @@ try {
     await importFolder(resolve(BAD, 'script-name'));
     expect((await text('[data-pkg="name"]')) === '<script>x</script>', `shown: ${await text('[data-pkg="name"]')}`);
     expect((await page.locator('.csc-shell script').count()) === 0, 'a script element was created');
+  });
+
+  await step('8b. two sets installed: switch back to Staunton', async () => {
+    await page.click('[data-use-set="staunton-clarkerubber@0.1.0"]');
+    await page.waitForFunction(() => document.querySelector('[data-pkg="name"]')?.textContent === 'Staunton (clarkerubber)');
+    let last;
+    for (let i = 0; i < 50 && last !== 'staunton-clarkerubber@0.1.0'; i++) {
+      last = (await (await fetch(mock.url + '__mock/store')).json()).settings.lastPackage;
+      if (last !== 'staunton-clarkerubber@0.1.0') await page.waitForTimeout(100);
+    }
+    expect(last === 'staunton-clarkerubber@0.1.0', `stored lastPackage ${last}`);
   });
 
   if (until !== 'import' && until !== 'plan') {

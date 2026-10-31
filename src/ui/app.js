@@ -5,6 +5,7 @@ import { COUNTS_PER_SIDE, DEFAULT_MACHINE, ROLES } from '../config.js';
 import { REFUSE_RUNNING, REFUSE_WORKER, defaultJobName, downloadFiles, exportJob, validJobName } from '../exporter.js';
 import { createFm } from '../fm.js';
 import { importPackage } from '../package.js';
+import { fetchLibrary, fetchSetFiles } from '../library.js';
 import { plan } from '../planner.js';
 import { load, save } from '../settings.js';
 import { fmtOne, fmtPair } from '../units.js';
@@ -33,7 +34,9 @@ export async function mountApp(root, host, engine) {
     // A status code when settings can't be read or saved (banner shown).
     settingsStatus: loaded.offline ? loaded.status : null,
     unit: hostUnit, // 'mm' or 'in'; stored values are always mm
-    inputs: { ...loaded.settings.lastInputs }, // mm; null when a field doesn't parse
+    // mm; null when a field doesn't parse. Connecting necks were removed in
+    // 0.1.8 (Rotary CAM supplies the support), so any stored value is dropped.
+    inputs: (({ neckEnabled, neckDiameter, ...rest }) => rest)(loaded.settings.lastInputs),
     importing: false,
     importProgress: '',
     importErrors: [],
@@ -41,6 +44,7 @@ export async function mountApp(root, host, engine) {
     setupDraft: null,
     machineDraft: null,
     machineOpen: false,
+    library: null, // null, {loading:true}, {error}, or {sets}
     jobName: null, // null follows the default name
     exporting: false,
     exportStatus: '',
@@ -174,12 +178,16 @@ export async function mountApp(root, host, engine) {
         })));
   }
 
-  // ---- Package section ----------------------------------------------------
+  // ---- Package section --------------------------------------------------
+  const keyOf = (set) => `${set.id}@${set.version}`;
+
   function packageSection() {
     const pkg = installed();
     const input = h('input', { type: 'file', class: 'csc-hidden', multiple: true, attrs: { webkitdirectory: '', 'data-import': '' } });
-    input.addEventListener('change', () => runImport(input.files));
-    const button = h('button', { type: 'button', class: pkg ? '' : 'csc-primary', text: 'Import package folder', disabled: state.importing,
+    input.addEventListener('change', () => runImport(() => input.files));
+    const browse = h('button', { type: 'button', class: pkg ? '' : 'csc-primary', text: state.library?.sets ? 'Refresh library' : 'Browse library',
+      disabled: state.importing || state.library?.loading, dataset: { act: 'browse' }, onclick: loadLibrary });
+    const folder = h('button', { type: 'button', text: 'Import package folder', disabled: state.importing,
       dataset: { act: 'import' }, onclick: () => input.click() });
 
     const line = pkg
@@ -187,41 +195,102 @@ export async function mountApp(root, host, engine) {
           h('div', { class: 'csc-pkg-name', dataset: { pkg: 'name' }, text: pkg.name }),
           h('div', { class: 'csc-muted', text: `Version ${pkg.version} · ${pkg.author}` }),
           h('div', { class: 'csc-muted', text: `${pkg.license} · ${pkg.attribution}` }))
-      : h('div', { class: 'csc-muted', text: 'No model package installed. Download a set from the chess-set library (github.com/infield/chessset-library), unzip it, then import the folder.' });
+      : h('div', { class: 'csc-muted', text: 'No chess set installed. Browse the library and install one, or import a package folder.' });
+
+    // Switch between installed sets.
+    const keys = Object.keys(state.settings.packages);
+    const switcher = keys.length > 1
+      ? h('div', { class: 'csc-col', attrs: { style: 'gap:4px' } }, h('div', { class: 'csc-muted', text: 'Installed sets' }),
+          keys.map((k) => {
+            const p = state.settings.packages[k];
+            const active = k === state.settings.lastPackage;
+            return h('button', { type: 'button', class: active ? 'csc-set csc-on' : 'csc-set', disabled: active || state.importing, dataset: { useSet: k },
+              text: `${p.name} ${p.version}${active ? ' (in use)' : ''}`, onclick: () => useSet(k) });
+          }))
+      : null;
 
     const errors = state.importErrors.length
       ? h('ul', { class: 'csc-errors', dataset: { importErrors: '' } }, state.importErrors.map((e) => h('li', { text: e })))
       : null;
 
     return h('div', { class: 'csc-card', dataset: { section: 'package' } },
-      h('h3', { text: 'Package' }),
+      h('h3', { text: 'Chess set' }),
       line,
-      h('div', { class: 'csc-row' }, button, input),
-      state.importProgress ? h('div', { class: 'csc-muted', text: state.importProgress }) : null,
+      switcher,
+      h('div', { class: 'csc-row' }, browse, folder, input),
+      libraryList(),
+      state.importProgress ? h('div', { class: 'csc-muted', dataset: { importProgress: '' }, text: state.importProgress }) : null,
       state.importDone ? h('div', { class: 'csc-ok', text: state.importDone }) : null,
       errors);
   }
 
-  async function runImport(fileList) {
-    if (!fileList || !fileList.length) return;
+  function libraryList() {
+    const lib = state.library;
+    if (!lib) return null;
+    if (lib.loading) return h('div', { class: 'csc-muted', text: 'Reading the chess-set library…' });
+    if (lib.error) return h('div', { class: 'csc-errors', dataset: { libraryError: '' }, text: lib.error });
+    if (!lib.sets.length) return h('div', { class: 'csc-muted', text: 'The library has no sets.' });
+    return h('div', { class: 'csc-col', dataset: { library: '' }, attrs: { style: 'gap:8px' } },
+      lib.sets.map((set) => {
+        const key = keyOf(set);
+        const have = state.settings.packages[key];
+        const older = Object.values(state.settings.packages).some((p) => p.id === set.id && p.version !== set.version);
+        const active = key === state.settings.lastPackage;
+        const action = have
+          ? h('button', { type: 'button', text: active ? 'In use' : 'Use', disabled: active || state.importing, dataset: { useSet: key }, onclick: () => useSet(key) })
+          : h('button', { type: 'button', class: 'csc-primary', text: older ? `Update to ${set.version}` : 'Install', disabled: state.importing,
+              dataset: { install: set.id }, onclick: () => runImport((onProgress) => fetchSetFiles(set, { onProgress })) });
+        return h('div', { class: 'csc-libset', dataset: { libSet: set.id } },
+          h('div', { class: 'csc-col', attrs: { style: 'gap:2px; flex:1; min-width:0' } },
+            h('div', { class: 'csc-pkg-name', text: `${set.name} ${set.version}` }),
+            set.description ? h('div', { class: 'csc-muted', text: set.description }) : null,
+            h('div', { class: 'csc-muted', text: `${set.license} · ${set.attribution}` })),
+          action);
+      }));
+  }
+
+  async function loadLibrary() {
+    state.library = { loading: true };
+    render();
+    try {
+      state.library = { sets: await fetchLibrary() };
+    } catch (e) {
+      state.library = { error: e.message || String(e) };
+    }
+    render();
+  }
+
+  function useSet(key) {
+    resetExport();
+    state.settings.lastPackage = key;
+    render();
+    saveSettings({ lastPackage: key }).catch(() => {});
+  }
+
+  // `getFiles(onProgress)` returns a FileList or File-like array: from the
+  // folder picker, or downloaded from the library.
+  async function runImport(getFiles) {
     state.importing = true;
     state.importErrors = [];
     state.importDone = '';
-    state.importProgress = 'Reading the folder…';
+    state.importProgress = 'Reading the files…';
     render();
+    const onProgress = (text) => { state.importProgress = text; render(); };
     let result;
     try {
-      result = await importPackage({
-        fm, call: engine.call, saveSettings, fileList,
-        onProgress: (text) => { state.importProgress = text; render(); },
-      });
+      const fileList = await getFiles(onProgress);
+      result = fileList && fileList.length
+        ? await importPackage({ fm, call: engine.call, saveSettings, fileList, onProgress })
+        : { ok: false, errors: [] };
     } catch (e) {
-      result = { ok: false, errors: [`Import failed: ${e.message || e}`] };
+      result = { ok: false, errors: [e.message || String(e)] };
     }
     state.importing = false;
     state.importProgress = '';
-    if (result.ok) state.importDone = `Installed ${result.record.name} ${result.record.version}.`;
-    else state.importErrors = result.errors;
+    if (result.ok) {
+      resetExport();
+      state.importDone = `Installed ${result.record.name} ${result.record.version}.`;
+    } else state.importErrors = result.errors;
     render();
   }
 
@@ -275,13 +344,7 @@ export async function mountApp(root, host, engine) {
         inputField('chuckRes', 'Chuck reservation'),
         inputField('tailRes', 'Tailstock reservation'),
         inputField('gap', 'Gap between pieces'),
-        inputField('radialAllowance', 'Radial allowance (per side)'),
-        h('div', { class: 'csc-field' }, h('label', { text: 'Connecting necks' }),
-          segmented('Connecting necks', [['on', 'On'], ['off', 'Off']], state.inputs.neckEnabled === false ? 'off' : 'on', (v) => pick('neckEnabled', v === 'on'), 'neck')),
-        state.inputs.neckEnabled === false
-          ? h('div', { class: 'csc-muted', text: 'Off: pieces are separate, with empty gaps. Your CAM must leave material between them.' })
-          : [inputField('neckDiameter', 'Neck diameter'),
-             h('div', { class: 'csc-muted', text: 'A rod in each gap keeps the blank in one piece while it is cut. Rotary CAM hasn\u2019t been tested yet, so this stays a choice for now.' })]),
+        inputField('radialAllowance', 'Radial allowance (per side)')),
       h('div', { class: 'csc-card', dataset: { section: 'sides' } },
         h('h3', { text: 'Sides' }),
         segmented('Sides', Object.entries(SIDE_LABEL), state.inputs.sides, (v) => pick('sides', v), 'sides')),
@@ -456,7 +519,7 @@ export async function mountApp(root, host, engine) {
       state.exportError ? h('div', { class: 'csc-errors', dataset: { exportError: '' }, text: state.exportError }) : null,
       state.downloadList ? h('div', { class: 'csc-muted', text: 'One file per click. Each blank STL is built when you click it.' }) : null,
       list,
-      h('div', { class: 'csc-muted', text: `One STL per blank${state.inputs.sides === 'both' ? ' per side' : ''} (ASCII, mm; X is the rotary axis, the first base at X = 0), a .rotary.json setup file next to each, layout.json and the model licence.` }));
+      h('div', { class: 'csc-muted', text: `One STL per blank${state.inputs.sides === 'both' ? ' per side' : ''} (ASCII, mm; X is the rotary axis, the first base at X = 0), with empty gaps between pieces for Rotary CAM to support, a .rotary.json setup file next to each, layout.json and the model licence.` }));
   }
 
   // A length on two lines: the display unit, and the other unit below.
@@ -466,19 +529,14 @@ export async function mountApp(root, host, engine) {
   };
 
   function pieceTable(result, unit) {
-    const covered = result.coveredTops; // only with connecting necks on
     const rows = ROLES.map((role, i) => {
       const p = result.pieces[role];
       return h('tr', {}, h('td', { text: ROLE_NAME[role] }), h('td', { text: String(COUNTS_PER_SIDE[i]) }),
-        h('td', {}, two(p.axialLength, unit)), h('td', {}, two(p.baseDiameter, unit)), h('td', {}, two(p.sweptDiameter, unit)),
-        covered ? h('td', { text: covered.includes(role) ? 'covered' : '', dataset: { covered: covered.includes(role) ? role : '' } }) : null);
+        h('td', {}, two(p.axialLength, unit)), h('td', {}, two(p.baseDiameter, unit)), h('td', {}, two(p.sweptDiameter, unit)));
     });
-    const heads = ['Piece', 'Per side', 'Axial length', 'Base Ø', 'Swept Ø', ...(covered ? ['Top'] : [])];
+    const heads = ['Piece', 'Per side', 'Axial length', 'Base Ø', 'Swept Ø'];
     return h('div', { class: 'csc-card', dataset: { section: 'pieces' } },
-      h('table', {}, h('thead', {}, h('tr', {}, heads.map((t) => h('th', { text: t })))), h('tbody', {}, rows)),
-      covered && covered.length
-        ? h('div', { class: 'csc-muted', text: `Top covered by the neck: ${covered.map((x) => ROLE_NAME[x]).join(', ')}. The neck is wider than these tops, so they are finished by hand after parting.` })
-        : null);
+      h('table', {}, h('thead', {}, h('tr', {}, heads.map((t) => h('th', { text: t })))), h('tbody', {}, rows)));
   }
 
   function blankCard(blank, result, pkg, inputs, unit) {
@@ -491,15 +549,14 @@ export async function mountApp(root, host, engine) {
     return h('div', { class: 'csc-card', dataset: { blank: String(blank.index) } },
       h('h3', { text: title }),
       h('div', { class: 'csc-pieces', text: `Chuck → ${blank.pieces.map((p) => ROLE_NAME[p.role]).join(' · ')} → tailstock` }),
-      blankPreview({ blank, inputs, pieces: pkg.pieces, scale: result.scale, neck: inputs.neckEnabled === false ? null : inputs.neckDiameter }),
+      blankPreview({ blank, inputs, pieces: pkg.pieces, scale: result.scale }),
       h('div', { class: 'csc-kvs' },
         kv('Used', two(blank.used, unit)),
         kv('Leftover', two(blank.leftover, unit)),
         kv('Stock', h('span', { class: 'csc-two', dataset: { stock: '' } }, h('span', { text: `${lenA} × ${widA} ${inputs.stockShape}` }), h('small', { text: `${lenB} × ${widB}` }))),
         kv('Chuck reservation', two(inputs.chuckRes, unit)),
         kv('Tailstock reservation', two(inputs.tailRes, unit)),
-        kv('Jaw set', result.jawSet),
-        blank.smallestSection != null ? kv('Smallest section', two(blank.smallestSection, unit)) : null));
+        kv('Jaw set', result.jawSet)));
   }
 
   // ---- Render -------------------------------------------------------------

@@ -7,3 +7,6 @@ desktop.ini
 node_modules/
 tests/fixtures/bad-packages/
 packages/*/knight-check.svg
+
+# Downloaded third-party model sources (licences checked before anything is published)
+sources/

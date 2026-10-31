@@ -1,7 +1,8 @@
-// One-time preparation of the Staunton model package (implementation plan P4.11; spec §10).
+// One-time preparation of model packages (implementation plan P4.11; spec §10).
 //
 // Usage:
-//   prepare-package <src> <outDir> [--knight-flip] [--replace <Piece>=<file.stl>]
+//   prepare-package <src> <outDir> [--knight-flip] [--replace <Piece>=<file.stl>]   (Staunton)
+//   prepare-package --recipe <recipe.json> <outDir> [--knight-flip]                  (any set)
 //   prepare-package --measure <file.stl> [--x0 <a> --x1 <b>]
 //   prepare-package --svg <outDir>
 //
@@ -30,6 +31,18 @@ function yUpToX(tris) {
     out[i] = tris[i + 1];
     out[i + 1] = -tris[i];
     out[i + 2] = tris[i + 2];
+  }
+  return out;
+}
+
+// Z-up to the X axis, (x, y, z) → (z, x, y): a cyclic permutation, so a
+// proper rotation that keeps the winding.
+function zUpToX(tris) {
+  const out = new Float64Array(tris.length);
+  for (let i = 0; i < tris.length; i += 3) {
+    out[i] = tris[i + 2];
+    out[i + 1] = tris[i];
+    out[i + 2] = tris[i + 1];
   }
   return out;
 }
@@ -153,10 +166,45 @@ function rebuild({ verts, faces }) {
   return out;
 }
 
+// Edges shared by four faces (an even count above two) are where two closed
+// parts of a piece touch along an edge, e.g. a part printed separately and
+// joined. The surface is still watertight, so such a mesh counts as closed;
+// the count is reported. Any edge used an odd number of times is a hole.
+function nonManifoldEven(verts, faces) {
+  const n = verts.length / 3;
+  const uses = new Map();
+  for (let f = 0; f < faces.length; f += 3) {
+    for (const [a, b] of [[faces[f], faces[f + 1]], [faces[f + 1], faces[f + 2]], [faces[f + 2], faces[f]]]) {
+      const key = a < b ? a * n + b : b * n + a;
+      uses.set(key, (uses.get(key) || 0) + 1);
+    }
+  }
+  let even = 0;
+  const odd = {};
+  for (const c of uses.values()) {
+    if (c % 2) odd[c] = (odd[c] || 0) + 1;
+    else if (c > 2) even++;
+  }
+  if (Object.keys(odd).length) {
+    console.log(`  edges used an odd number of times: ${Object.entries(odd).map(([c, k]) => `${k} × ${c}`).join(', ')}; shared by four or more faces: ${even}`);
+    return null;
+  }
+  return even;
+}
+
 function closeMesh(tris, pieceName) {
   let mesh = weld(tris, WELD_TOL);
   let check = closedCheck(mesh.verts, mesh.faces);
   let holes = [];
+  let shared = 0;
+  if (!check.closed) {
+    const even = nonManifoldEven(mesh.verts, mesh.faces);
+    if (even) {
+      shared = even;
+      check = { ...check, closed: true };
+      console.log(`${pieceName}: watertight, with ${even} edge(s) shared by four faces (parts touching)`);
+    }
+  }
   if (!check.closed) {
     const filled = fillSmallHoles(mesh.verts, mesh.faces);
     if (filled) {
@@ -172,7 +220,26 @@ function closeMesh(tris, pieceName) {
     );
   }
   if (check.volume <= 0) fail(`${pieceName} is inside out (volume ${check.volume.toFixed(1)} mm³); check its winding.`);
-  return { tris: rebuild(mesh), volume: check.volume, degenerate: mesh.degenerate, holes };
+  return { tris: rebuild(mesh), volume: check.volume, degenerate: mesh.degenerate, holes, shared };
+}
+
+// Steps 2–4 for one piece already on the X axis.
+// `knightAngle` (degrees) replaces the automatic knight turn, for a knight
+// whose top is too symmetric for the mean to show which way it faces.
+function preparePiece(role, tris, flip, label, knightAngle) {
+  const name = PIECE_NAME[role];
+  tris = centre(tris);
+  if (role === 'knight' && knightAngle !== undefined) {
+    tris = rotateAboutX(tris, (knightAngle * Math.PI) / 180 + (flip ? Math.PI : 0));
+    console.log(`Knight turned ${knightAngle}° about X (set in the recipe)${flip ? ', flipped' : ''}`);
+  } else if (role === 'knight') {
+    const turned = knightFacing(tris, flip);
+    tris = turned.tris;
+    console.log(`Knight turned ${((turned.theta * 180) / Math.PI).toFixed(2)}° about X${flip ? ' (flipped)' : ''}`);
+  }
+  const closed = closeMesh(tris, name);
+  if (closed.holes.length) console.log(`${name}: filled ${closed.holes.length} hole(s) of ${closed.holes.join(', ')} edges`);
+  return { ...closed, source: label, triangles: closed.tris.length / 9, m: measure(closed.tris) };
 }
 
 function preparePackage(src, outDir, flip, replacements) {
@@ -223,7 +290,92 @@ function preparePackage(src, outDir, flip, replacements) {
   };
   writeFileSync(join(outDir, 'chess-set.json'), JSON.stringify(manifest, null, 2) + '\n');
   copyFileSync(resolve(src, '..', '..', 'LICENSE'), join(outDir, 'LICENSE'));
+  report(prepared, outDir);
+}
 
+// Removes a triangle together with its reversed twin (the pair encloses
+// nothing), and keeps one copy of an exact duplicate.
+function dropTwins(mesh, label) {
+  const { faces } = mesh;
+  const byKey = new Map();
+  const keep = [];
+  let removed = 0;
+  for (let i = 0; i < faces.length; i += 3) {
+    const f = [faces[i], faces[i + 1], faces[i + 2]];
+    const key = [...f].sort((a, b) => a - b).join();
+    const j = f.indexOf(Math.min(...f));
+    const cyc = [f[j], f[(j + 1) % 3], f[(j + 2) % 3]].join();
+    const prev = byKey.get(key);
+    if (prev) {
+      removed += prev.cyc === cyc ? 1 : 2;
+      if (prev.cyc !== cyc) {
+        keep[prev.idx] = null;
+        byKey.delete(key);
+      }
+      continue;
+    }
+    byKey.set(key, { cyc, idx: keep.length });
+    keep.push(f);
+  }
+  if (removed) console.log(`${label}: removed ${removed} duplicate or cancelling triangle(s)`);
+  return { ...mesh, faces: Uint32Array.from(keep.filter(Boolean).flat()) };
+}
+
+// Any set, from a recipe (packages/recipes/<id>.json):
+// {id, version, name, author, source, license, attribution, notes?, up:"Y"|"Z",
+//  sourceDir (relative to the recipe), licenseFiles:[paths in sourceDir],
+//  changes, pieces:{role: [{file, translate?:[x,y,z]}, …]}}
+// A piece made of several parts (printed separately) is joined as
+// separate closed shells, each part moved by its translate first.
+function prepareFromRecipe(recipePath, outDir, flip) {
+  const recipe = JSON.parse(readFileSync(recipePath, 'utf8'));
+  const dir = resolve(recipePath, '..', recipe.sourceDir);
+  const toX = recipe.up === 'Z' ? zUpToX : recipe.up === 'Y' ? yUpToX : fail('recipe "up" must be "Y" or "Z"');
+  const prepared = {};
+  for (const role of ROLES) {
+    const parts = (recipe.pieces[role] || fail(`recipe has no ${role}`)).map(({ file, translate = [0, 0, 0] }) => {
+      const path = join(dir, file);
+      if (!existsSync(path)) fail(`Missing ${path}`);
+      const t = parseStl(readFileSync(path));
+      for (let i = 0; i < t.length; i += 3) for (let k = 0; k < 3; k++) t[i + k] += translate[k];
+      return t;
+    });
+    const joined = new Float64Array(parts.reduce((n, t) => n + t.length, 0));
+    parts.reduce((o, t) => (joined.set(t, o), o + t.length), 0);
+    const flipThis = role === 'knight' && (flip || recipe.knightFlip === true);
+    // Weld once in the source coordinates, so vertices that should be shared
+    // are exactly equal before the move; the weld after it then can't split
+    // them differently (it is greedy, and points near the tolerance apart
+    // could otherwise regroup).
+    // recipe.weld[role] can loosen the tolerance for one piece whose source
+    // has near-duplicate points (the Dubrovnik pawn needs 0.002 mm).
+    const welded = rebuild(dropTwins(weld(joined, recipe.weld?.[role] ?? WELD_TOL), PIECE_NAME[role]));
+    prepared[role] = preparePiece(role, toX(welded), flipThis, recipe.pieces[role].map((p) => p.file).join(' + '), recipe.knightAngle);
+    if (parts.length > 1) console.log(`${PIECE_NAME[role]}: joined ${parts.length} parts`);
+  }
+
+  mkdirSync(outDir, { recursive: true });
+  const pieces = {};
+  for (const role of ROLES) {
+    writeFileSync(join(outDir, `${role}.stl`), writeBinary(prepared[role].tris));
+    const m = prepared[role].m;
+    pieces[role] = { file: `${role}.stl`, axialLength: r2(m.axialLength), baseDiameter: r2(m.baseDiameter), sweptDiameter: r2(m.sweptDiameter), topDiameter: r2(m.topDiameter) };
+  }
+  const { id, version, name, author, source, license, attribution, notes } = recipe;
+  const manifest = { schema: 1, id, version, name, author, source, license, licenseFile: 'LICENSE', attribution, units: 'mm', frame: 'x-axis-base-at-origin-v1', pieces };
+  if (notes) manifest.notes = notes;
+  writeFileSync(join(outDir, 'chess-set.json'), JSON.stringify(manifest, null, 2) + '\n');
+
+  // LICENSE: who made it, under what licence, and what was changed (CC
+  // licences require the changes to be indicated), then the original
+  // licence and readme text.
+  const originals = (recipe.licenseFiles || []).map((f) => `----- ${f} -----\n${readFileSync(join(dir, f), 'utf8').trim()}\n`);
+  const header = `${name}\n${attribution}\nLicence: ${license}\nSource: ${source}\n\nChanges: ${recipe.changes}\n`;
+  writeFileSync(join(outDir, 'LICENSE'), [header, ...originals].join('\n'));
+  report(prepared, outDir);
+}
+
+function report(prepared, outDir) {
   console.log('\n| Piece | Triangles | Axial length | Base Ø | Swept Ø | Top Ø | Closed after weld (' + WELD_TOL + ' mm) |');
   console.log('|---|---:|---:|---:|---:|---:|---|');
   for (const role of ROLES) {
@@ -231,7 +383,7 @@ function preparePackage(src, outDir, flip, replacements) {
     const m = p.m;
     console.log(
       `| ${PIECE_NAME[role]} | ${p.triangles} | ${m.axialLength.toFixed(2)} | ${m.baseDiameter.toFixed(2)} | ` +
-        `${m.sweptDiameter.toFixed(2)} | ${m.topDiameter.toFixed(2)} | yes${p.holes.length ? `, after filling ${p.holes.length} hole(s) of ${p.holes.join(', ')} edges` : ''} |`,
+        `${m.sweptDiameter.toFixed(2)} | ${m.topDiameter.toFixed(2)} | yes${p.holes.length ? `, after filling ${p.holes.length} hole(s) of ${p.holes.join(', ')} edges` : ''}${p.shared ? `; ${p.shared} edge(s) shared by four faces` : ''} |`,
     );
   }
   console.log(`\nWrote ${outDir}/: chess-set.json, LICENSE, ${ROLES.map((r) => `${r}.stl`).join(', ')}`);
@@ -323,6 +475,11 @@ if (args[0] === '--measure') {
       if (!PIECE_NAME[String(piece).toLowerCase()] || !file) fail('--replace needs <Piece>=<file.stl>, e.g. --replace Knight=knight-fixed.stl');
       replacements[PIECE_NAME[piece.toLowerCase()]] = file;
     } else positional.push(args[i]);
+  }
+  if (args[0] === '--recipe') {
+    if (positional.length !== 3) fail('Usage: prepare-package --recipe <recipe.json> <outDir> [--knight-flip]');
+    prepareFromRecipe(positional[1], positional[2], flip);
+    process.exit(0);
   }
   if (positional.length !== 2) {
     fail('Usage: prepare-package <src> <outDir> [--knight-flip] [--replace <Piece>=<file.stl>]');

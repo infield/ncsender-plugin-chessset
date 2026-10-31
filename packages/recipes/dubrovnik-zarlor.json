@@ -1,0 +1,63 @@
+{
+  "id": "dubrovnik-zarlor",
+  "version": "0.1.0",
+  "name": "Dubrovnik I 1950 (Zarlor)",
+  "author": "Zarlor; prepared by Marc Infield",
+  "source": "https://www.thingiverse.com/thing:3497151",
+  "license": "CC BY",
+  "attribution": "\"Dubrovnik I Chess Set (1950)\" by Zarlor on Thingiverse (thing:3497151)",
+  "notes": "Knight: not round, so it is carved by indexed passes rather than turned; hand finishing expected.",
+  "up": "Z",
+  "sourceDir": "../../sources/thingiverse/3497151",
+  "licenseFiles": [
+    "LICENSE.txt",
+    "README.txt"
+  ],
+  "changes": "rotated so the piece lies along the X axis with its base at X = 0, centred on the axis, the knight turned so its face points +Z, and saved as binary STL in mm (shape and size unchanged); the bishop's two printed parts (body and top) and the knight's two printed parts (base and head) are joined into one piece each, the knight's head set on its base (raised 20.35 mm); the pawn's tiny defect at its top (near-duplicate points and a doubled triangle) cleaned up by welding at 0.002 mm.",
+  "pieces": {
+    "king": [
+      {
+        "file": "files/chess_king.stl"
+      }
+    ],
+    "queen": [
+      {
+        "file": "files/chess_queen.stl"
+      }
+    ],
+    "bishop": [
+      {
+        "file": "files/chess_bishop_bottom.stl"
+      },
+      {
+        "file": "files/chess_bishop_top.stl"
+      }
+    ],
+    "knight": [
+      {
+        "file": "files/chess_knight_bottom.stl"
+      },
+      {
+        "file": "files/chess_knight_top.stl",
+        "translate": [
+          0,
+          0,
+          20.35
+        ]
+      }
+    ],
+    "rook": [
+      {
+        "file": "files/chess_rook.stl"
+      }
+    ],
+    "pawn": [
+      {
+        "file": "files/chess_pawn.stl"
+      }
+    ]
+  },
+  "weld": {
+    "pawn": 0.002
+  }
+}

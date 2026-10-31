@@ -121,8 +121,7 @@ Any change to piece size or stock length means redoing all of it. Chess Set Crea
 | Chuck reservation | [C] | 25.4 mm (1 in) | 0–200 mm | Includes the jaw grip, the holding tab and the parting neck. |
 | Tailstock reservation | [C] | 19.05 mm (0.75 in) | 0–200 mm | |
 | Gap | [C] | 10.0 mm (0.39 in) | 6.35–50 mm | Must let Rotary CAM's finishing cutter reach the next piece's base face and the previous piece's top: at least the cutter diameter; any extra clearance is the user's choice. Assumes a 6.35 mm (¼ in) cutter [O-4]. Parting cuts happen only at the two outer ends (§5.5). |
-| Connecting necks | [C] (owner, 2026-10-30) | On | on / off | Until Phase 0 picks the outcome (§5.5): on = outcome B, off = outcome A. Removed once the outcome is known. |
-| Connecting-neck diameter | [O-2] | 7.6 mm (0.3 in) | 3 mm – stock width | Shown and checked only while connecting necks are on (outcome B, §5.5). Matches Rotary CAM's default parting-neck diameter, 0.3 in (owner-reported). |
+| ~~Connecting-neck diameter~~ | removed (owner, 2026-10-30) | — | — | Not an input: exports follow outcome A, and Rotary CAM is expected to supply the support between pieces (§5.5). If Phase 0 shows otherwise, it returns with range 3 mm – stock width and default 7.6 mm. Matches Rotary CAM's default parting-neck diameter, 0.3 in (owner-reported). |
 | Radial allowance | [C] | 1.5 mm (0.06 in) | 0–10 mm | Per side. |
 | Sides | [C] | Both | both / light / dark | "Light only" plans and exports the light side only. |
 
@@ -195,7 +194,7 @@ So a value shown as "needed" or "fits" is always true.
 
 Rotary CAM lets the user choose the turning axis (X/Y/Z) and "On axis: Model origin", which sets where the model sits radially (owner-reported).
 
-**Build gate.** The exporter was planned to wait for Phase 0 (O-1, O-2). The owner has no access to Rotary CAM yet (it is unreleased), so on 2026-10-30 the owner asked for export now: both outcomes are built, behind a **Connecting necks** on/off input (§5.1), with Download files at all times (§5.8). Phase 0 still decides the outcome and is still needed for AC-EXP-04. [C]
+**Build gate.** The exporter was planned to wait for Phase 0 (O-1, O-2). The owner has no access to Rotary CAM yet (it is unreleased), so on 2026-10-30 the owner asked for export now, with Download files at all times (§5.8). Phase 0 still confirms the outcome and is still needed for AC-EXP-04. [C]
 
 **Rules for the exported STL.** What `layout.json` and each sidecar record is listed in §5.8 and §5.11.
 - **Format:** ASCII STL in mm, one file per blank. ASCII is required because the File Manager stores text only (§12). Vertex coordinates have at least 4 decimal places. [P]
@@ -207,7 +206,7 @@ Rotary CAM lets the user choose the turning axis (X/Y/Z) and "On axis: Model ori
   - **A. Rotary CAM leaves a support between separate bodies,** as it does at the two outer ends. The plugin exports the pieces as separate bodies with empty gaps, and the support is sized in Rotary CAM. There is no connecting-neck input and no covered-top rule.
   - **B. Rotary CAM cuts through empty gaps.** The plugin adds connecting necks (below).
 
-  Until Phase 0, both outcomes are built and the user chooses with the **Connecting necks** input: on (the default) is B, off is A. After Phase 0, the input is removed, the spec keeps the selected outcome, and the other is deleted. [C] (owner, 2026-10-30, replacing "only the selected outcome is built" (A1) for this interim)
+  **Working outcome: A.** [C] (owner, 2026-10-30) The owner expects Rotary CAM to provide the rods or supports between pieces itself, so exports have empty gaps and no connecting-neck input. (0.1.7 briefly offered both outcomes behind a switch; 0.1.8 removed it.) Phase 0 confirms this. The outcome-B code (the planner's neck rules and `neckCylinder`) stays in the source, tested but unreachable from the dialog, and is deleted once Phase 0 confirms A, or turned back on if it shows B.
 - **Connecting necks (outcome B):** each gap holds a cylinder of the connecting-neck diameter, overlapping each neighbour by 0.5 mm. This keeps the blank one connected body, so roughing cannot cut through a gap and part the blank early. [P]
   - A piece's top is **covered** when `scaled top diameter < connecting-neck diameter`. The connecting neck covers the top, which is finished by hand after parting. With the Staunton package at the default 38.1 mm queen base, this affects the queen (5.3 mm top) and the bishop (5.0 mm top).
   - The plan lists the pieces whose top is covered.
@@ -220,7 +219,8 @@ Rotary CAM lets the user choose the turning axis (X/Y/Z) and "On axis: Model ori
 **v1** [C]:
 - Packages come from a **chess-set library**: one repository holding one package per set style, each released on its own (§5.9). v1 publishes one set, Staunton. (owner, 2026-10-30)
 - The user downloads a set's ZIP, unzips it and imports the folder.
-- In the plugin, using several installed packages (a package selector), in-plugin download, update offers and version pinning are [v2]. The library can hold more sets before then.
+- **Library picker** [C] (owner, 2026-10-30): the dialog lists the sets in the library and installs one in a click (implementation plan P4.8a). Several sets can be installed, and the user picks which one is in use. Importing a package folder stays, for offline use and sets outside the library.
+- Automatic update prompts, checksums and version pinning are [v2].
 
 **Package rules** [P]:
 - The package contains `chess-set.json`, the six STL files (binary or ASCII), and `LICENSE`.
@@ -343,14 +343,19 @@ v1 keeps the last job's inputs in settings, so the dialog reopens with them. [P]
   - Users download a set's ZIP, unzip it and import the folder.
 - **Approval:** creating either public repository needs the owner's approval at release time. [C]
 
-**v2:**
-- a package selector for several installed packages [v2]
-- in-plugin download of a model package from a tagged GitHub release, using the same format as local import [v2]
-- SHA-256 checksums verified against the release [v2]
-- an update offer that never changes an existing job [v2]
-- job records that pin the package version [v2]
+**Library picker (v1)** [C] (owner, 2026-10-30):
+- The library's `main` branch holds `library.json`, its index: `{format:"chessset-library", formatVersion:1, sets:[{id, name, version, tag, path, author?, license, attribution, source, description?}]}`. `tag` must be `<id>-v<version>`, and `path` must pass the §5.6 path rule and start with `sets/`; other entries are skipped.
+- The dialog reads the index, and installs a set by downloading `chess-set.json` and the files it names from `raw.githubusercontent.com` at the set's tag. Release ZIPs can't be used: GitHub's release-asset download doesn't allow cross-origin reads, while raw files do (§12). There is no ZIP to unpack.
+- Downloaded files go through exactly the same import checks and storage as a picked folder (§5.6, §5.7). The id and version in the index must match the downloaded `chess-set.json`.
+- The list shows each set's name, version, description, licence and attribution, and **Install**, **Update to <version>** (an older version of that set is installed), **Use** or **In use**.
+- Installed sets are listed so the user can switch the one in use (`lastPackage`).
+- Without a connection, the picker says so and points to **Import package folder**.
+- A new set must be tagged and released before `library.json` lists it.
 
-Before v2 is specified, confirm whether the dialog can fetch GitHub release assets directly. Browser cross-origin rules may require a server-side fetch.
+**v2:**
+- SHA-256 checksums verified against the library [v2]
+- automatic update prompts that never change an existing job [v2]
+- job records that pin the package version [v2]
 
 ### 5.10 Errors
 
@@ -359,7 +364,8 @@ All rows are [P].
 | Condition | Blocks | Message must say |
 |---|---|---|
 | Machine settings not saved yet | planning | shows the first-run setup |
-| No package installed | planning | "Import a model package folder" (v2: or download one) |
+| No package installed | planning | "No chess set installed. Browse the library and install one, or import a package folder." |
+| Library unreachable | installing from the library | "Can't reach the chess-set library (<reason>). Check the internet connection, or import a package folder instead." |
 | Manifest or schema invalid, or units not mm | import | file, field, and the expected value |
 | Missing or unreadable STL | import | role and path |
 | Piece not in the frame | import | file, axis offset or base-plane position, and the 0.1 mm limit |
@@ -508,7 +514,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
 | Where models live | Separate package [C] | *Bundled in the plugin* (6.9 MB): no import step, but the owner wants the plugin free of model payload and packages reusable. |
 | Package storage | Import once, stored as base64 binary in a hidden File Manager folder [C] | *Re-pick the package folder at each export*: less code, but a step on every export, and the folder must be on that computer. *ASCII STL*: 5× larger (about 34 MB). *IndexedDB* (ncCAM's choice): tied to one browser and lost if browser data is cleared. |
 | Import checks | Parse, frame check, units [C] | *Full checks at import* (closed mesh, declared vs measured, SHA-256): these repeat what the packaging tool checks for the one v1 package. SHA-256 comes back in v2 with third-party packages. |
-| Distribution | v1: plugin and package as GitHub releases, package imported by hand [C] | *In-plugin download in v1*: adds GitHub fetching (possible cross-origin issues) and update handling now. *Bundling the package*: reverses the separate-package decision. |
+| Distribution | v1: plugin as GitHub releases; sets from the chess-set library, installed in the dialog (library picker) or imported by hand [C] | *Downloading the release ZIP in the dialog*: GitHub's release-asset download blocks cross-origin reads, and unzipping needs a library; raw files at the tag avoid both. *Hand import only*: three manual steps per set. *Bundling the package*: reverses the separate-package decision. |
 | Licence and channel | GPL-3.0, public repo, GitHub releases, `repository` field [C] | *Dual GPL-3.0 / commercial, as ncSender*: would need the copyright of every contribution; the owner chose GPL-3.0 only. *MIT*: allows closed derivatives with no terms. AAxis and ncCAM are GPL-3.0, and this plugin follows their patterns. |
 | Runtime | Browser dialog only [P] | *Server module (Jint)*: could write binary STL and fetch GitHub releases, but it has no ES modules or Node APIs, and a crash while loading quarantines the plugin version (`../AAxis/CLAUDE.md`). |
 | Export shape | One STL per blank [P] | *One STL per piece plus a layout file*: Rotary CAM machines one part per program (owner-reported), so it would need multi-part placement it doesn't have. |
@@ -591,6 +597,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
   6. Weld vertices and check that every mesh is closed. The tool fills small, simple holes itself (implementation plan P4.11). A mesh that still won't close is repaired in MeshLab and fed back to the tool. If it still won't close, the owner decides.
   7. Write `chess-set.json` and copy `LICENSE`.
   8. Record the results in Appendix B.
+- **Other sets** (owner, 2026-10-30): the library also holds Dubrovnik I 1950 (Zarlor, CC BY), Minimal Look (FunFunBoy, CC BY-NC), Minimalist contemporary (link0007, CC BY-NC) and Gothic (nestra, CC BY, after Peter Ganine's 1959 design), all 0.1.0 beta, prepared with the recipe mode (P4.11). A Duchamp set was prepared but is not published (owner, 2026-10-30): the Readymake Duchamp models reproduce Marcel Duchamp's set, whose estate objected to them in 2014. Its recipe is kept for reference.
 - **Publishing:** the package folder goes in the chess-set library as `sets/staunton-clarkerubber/`, and is zipped and attached to the release `staunton-clarkerubber-v0.1.0` (§5.9). It is never part of the plugin.
 
 ## 11. Worked examples
@@ -662,6 +669,7 @@ All from ncSender source at commit `2f8a659`, checked October 30, 2026:
 - **Uploads:** the File Manager's upload picker is limited to `.nc .gcode .gc .ngc .tap .txt`. That limit applies only to browser uploads, not to the save API. An upload (`POST /api/gcode-files`) also makes the uploaded file the active program (`GcodeFileEndpoints.cs:51–53`).
 - **Folders:** `POST /api/gcode-files/folders/delete {path}` deletes a folder.
 - **Load:** clicking a file in the File Manager calls the load routine with no extension check (R2).
+- **GitHub cross-origin reads** (checked 2026-10-30): `raw.githubusercontent.com` and `api.github.com` send `access-control-allow-origin: *`. A release-asset download (`github.com/.../releases/download/...`) answers with a 302 and no such header, so a browser dialog can't read release ZIPs.
 - **Units setting** (checked at ncSender commit `a75e84c`, October 30, 2026): `GET /api/settings/{name}` returns `{key, value}`, or 404 (`ServerBuilder.cs:553–559`). `unitsPreference` is `"metric"` or `"imperial"`, default `"metric"` (`SettingsManager.cs:218`). When settings change, the server broadcasts `settings-changed`, and each client re-fires it as a window `CustomEvent('settings-changed')` whose `detail` holds only the changed keys (`lib/api.js:721–728`). The plugin dialog runs in that window, so it receives the event.
 
 ## 13. Open questions
@@ -762,7 +770,7 @@ One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as A
 | D2 | Worker | Detail 1. | ncCAM pattern (`src/index.js:8–66`). No separate worker file and no cross-origin worker URL. |
 | D3 | Free folder | One `GET /api/gcode-files`. The taken names are the `name` of each entry with `type === 'folder'` directly under `chess set`. Take the first of `<name>`, `<name> (2)`, … that isn't taken. | Adapted from ncCAM's `freePath` (`src/ui/app.js:883–895`), which uses one listing, for files only. It avoids a logged 404 for each probe. The tree's shape is verified (§12). |
 | D4 | Export write order | `LICENSE-models.txt` → each blank STL followed by its sidecar, light side first → `layout.json`. | §5.8. `layout.json` last marks a complete job. |
-| D5 | Support outcome | Phase 0 decides it. Until then both are built behind `inputs.neckEnabled` (true = B, the default; false = A), at the owner's request on 2026-10-30; after Phase 0 the input and the unused outcome are removed (A1). | §5.5 |
+| D5 | Support outcome | Working outcome A (owner, 2026-10-30): Rotary CAM is expected to supply the support. The dialog has no neck input; the planner and blank builder keep outcome B behind `inputs.neckEnabled`, which the dialog never sets (stored values from 0.1.7 are dropped on load). Phase 0 confirms; then the unused code is removed (A1). | §5.5 |
 | D6 | Package storage root | `.chess-set-creator/sets` | Dot-folders are hidden from the tree; verified (§12). |
 | D7 | Lengths in the planner | Integer micrometres (`Math.round(mm × 1000)`). | Equal-length pieces (the bishop and the knight) must compare exactly equal. |
 | D8 | Rounding | **Displays:** half up; mm to 1 decimal, inches to 2. **Minimums:** rounded up. **Maximums:** rounded down. **Input fields:** mm to 2 decimals and inches to 3, trailing zeros trimmed. | §5.4. Input fields are never re-read from their displayed text (P4.10). |
@@ -925,7 +933,7 @@ Write:
 
 **Exit:** `npm test` and `npm run ui-check` pass in full, and the Phase 5 acceptance criteria pass.
 
-**Result (2026-10-30):** built as 0.1.7 with both outcomes behind the Connecting necks input and Download files shown at all times (§5.5, §5.8). `npm test` and `ui-check` pass in full, including a real browser download and the running-job refusal. All ten 12 in blanks (necks on and off) were rebuilt from the package and checked: minX 0, maxX equal to the used length, on the axis, every shell closed, 7–16 MB each (AC-EXP-03). Still open: Phase 0 (O-1, O-2), AC-EXP-04 in Rotary CAM, and removing the input once the outcome is known.
+**Result (2026-10-30):** built as 0.1.7 with both outcomes behind a Connecting necks input (removed in 0.1.8: outcome A, D5) and Download files shown at all times (§5.5, §5.8). `npm test` and `ui-check` pass in full, including a real browser download and the running-job refusal. All ten 12 in blanks (necks on and off) were rebuilt from the package and checked: minX 0, maxX equal to the used length, on the axis, every shell closed, 7–16 MB each (AC-EXP-03). Still open: Phase 0 (O-1, O-2), AC-EXP-04 in Rotary CAM, and removing the input once the outcome is known.
 
 #### Phase 6 — Shop validation
 
@@ -1012,7 +1020,7 @@ Unknown top-level fields, including `sha256`, are ignored.
 - `queenBase`, `stockLength`, `stockShape`, `stockWidth`
 - `chuckRes`, `tailRes`, `gap`, `radialAllowance`
 - `sides`: `'light'`, `'dark'` or `'both'`
-- `neckEnabled` (boolean; true = outcome B) and, when it is true, `neckDiameter`. Until Phase 0 both outcomes run behind this input (D5).
+- `neckEnabled` (boolean; true = outcome B) and, when it is true, `neckDiameter`. Dormant: the dialog never sets it (D5).
 
 `pieces` holds the installed package's measured dimensions. `machine` is `{maxBlankLength, jaws:[{name, min, max}]}`.
 
@@ -1148,6 +1156,13 @@ All three are pure.
 - The page records loaded keys in a `Set` and skips keys it has already loaded.
 - A missing file (`null`), including a missing `LICENSE`, throws *"The installed package files are missing (<path>). Re-import the package."*
 
+#### P4.8a `library.js` (library picker)
+
+- `LIBRARY_INDEX = https://raw.githubusercontent.com/infield/chessset-library/main/library.json`; set files are `LIBRARY_RAW/<tag>/<path>/<file>`, each path segment URI-encoded.
+- `fetchLibrary(fetch)` → the valid sets (`validateIndex`, §5.9). A failed request throws `LibraryError` with the §5.10 "library unreachable" message.
+- `fetchSetFiles(set, {fetchFn, onProgress})` downloads `chess-set.json`, refuses it if its id or version differs from the index, then downloads its `licenseFile` and six piece files (only names that pass the path rule). It returns File-like objects `{name, webkitRelativePath: "<id>/<name>", text(), arrayBuffer()}`, which `importPackage` takes like a picked folder.
+- The dialog never runs downloaded content: it is parsed as JSON and STL only, and shown with `textContent`.
+
 #### P4.9 `exporter.js`
 
 - **`defaultJobName`:** follows §5.8.
@@ -1172,10 +1187,10 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 - **Shell:** a header (title, build tag, and a note saying the units follow ncSender), pinned while the dialog scrolls, and two columns that stack below 900 px. Text is set only with `textContent`; there is no `innerHTML` anywhere in `src/`. The style element (`id="csc-style"`) is tagged with the build and replaced when the build changes, since a plugin update doesn't reload the page. It uses ncSender CSS variables. Selectors use (0,2,1) specificity, e.g. `.csc-shell .csc-main button` (AAxis item 9). No `alert`, `confirm` or `prompt`.
 - **First-run setup:** shown when `machine === null`. It holds the max blank length and 1–4 jaw-set rows (name, min, max), filled with `DEFAULT_MACHINE`, and a **Save machine settings** button. Nothing else shows until it is saved.
 - **Left column**, in order:
-  1. **Package:** a read-only line for the installed package (a package selector is deferred to v2), the **Import package folder** button, import progress and errors.
+  1. **Chess set:** the set in use; the installed sets, to switch between (when there are several); **Browse library**, which lists the library's sets with Install / Update / Use (§5.9); **Import package folder**; progress and errors.
   2. **Size:** queen base diameter.
   3. **Stock:** length, shape and width, with a jaw-set readout.
-  4. **Allowances:** chuck reservation, tailstock reservation, gap, radial allowance, the **Connecting necks** on/off input (until Phase 0), and, while it is on, the connecting-neck diameter.
+  4. **Allowances:** chuck reservation, tailstock reservation, gap, radial allowance. (No connecting-neck input: outcome A, D5.)
   5. **Sides:** both / light / dark.
   6. **Machine:** collapsed; the same fields as the setup screen, with a **Save** button.
 - **Input fields:**
@@ -1223,6 +1238,15 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 - Write `chess-set.json`, with the §5.6 example fields, measured dimensions rounded to 0.01, and the knight note.
 - Copy `LICENSE` from `<src>/../../LICENSE`, the Staunton-Pieces repository root.
 - Print an Appendix B table with the weld tolerance used and the closed status.
+
+**Recipe mode** (owner, 2026-10-30, for the library's other sets): `prepare-package --recipe <recipe.json> <outDir> [--knight-flip]`. A recipe (`packages/recipes/<id>.json`, committed; the source models stay in the git-ignored `sources/`) gives the set's `id`, `version`, `name`, `author`, `source`, `license`, `attribution`, optional `notes`, `up` (`"Y"` or `"Z"`), `sourceDir`, `licenseFiles` (the original licence and readme, copied into `LICENSE`), `changes` (the changes made, which CC licences require to be stated), and per role a list of parts `[{file, translate?}]`. Then:
+1. Parts are joined as separate shells, each moved by its `translate` (for pieces printed in parts).
+2. The joined piece is welded once in its source coordinates (optionally looser for one piece, `weld: {role: tol}`), and any triangle with a reversed twin is removed with it, exact duplicates once. Welding before the move keeps shared points identical, so the later weld can't regroup them.
+3. Z-up turns onto X by `(x, y, z) → (z, x, y)`; Y-up as step 1 above.
+4. Steps 2–5 above. `knightAngle` (degrees) replaces the automatic knight turn when the top is too symmetric for the mean to show the face.
+5. **Closed** here also accepts edges shared by four faces (an even count), where two closed parts touch along an edge; the surface is watertight, and the count is reported. Any edge used an odd number of times is still a hole. (The plugin's own `closedCheck` is unchanged.)
+
+The Staunton path is unchanged; its output stays byte-identical.
 
 **Other modes:**
 - `--measure` prints the axial length and the base, swept and top diameters. With `--x0` and `--x1`, it keeps only the triangles whose vertices all lie in that range.
@@ -1445,6 +1469,9 @@ These tests use a fake `fm` (with a fixed tree) and a fake `call`, both of which
 1. Open the dialog. The first-run setup shows; save it with the defaults.
    1b. Open `config-ui?raw=1` (the placeholders not filled in). The dialog falls back to port 8090 and shows no page errors.
 2. Import `packages/staunton-clarkerubber/` through `setInputFiles` on the `webkitdirectory` input. The package shows as installed.
+   2a. With the library unreachable (requests to `raw.githubusercontent.com` aborted), **Browse library** shows the §5.10 message.
+   2b. Requests to `raw.githubusercontent.com` are served from `tests/fixtures/library.json` and `packages/<id>/`. **Browse library** → **Install** installs Staunton; 8 files are stored, and it shows **In use**.
+   8b. With two sets installed (Staunton and `script-name`), switching back to Staunton changes the set in use and stores `lastPackage`.
 3. Set the stock length to 12 in. Expect 5 cards.
 4. The mock starts with ncSender set to imperial. Switch it to metric with `setHostUnits('metric')`. The first card's stock shows `304.8 mm × 50.8 mm`, with `12.00 in × 2.00 in` below. The gap field shows `10`, and the plan is unchanged. Step 7 also checks that the stored inputs are mm (`stockLength` exactly `304.8`).
 5. Type width 38.1 (mm): the error box lists 5 pieces. Set the width back to 50.8.

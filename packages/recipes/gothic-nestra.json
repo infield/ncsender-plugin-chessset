@@ -1,0 +1,49 @@
+{
+  "id": "gothic-nestra",
+  "version": "0.1.0",
+  "name": "Gothic (nestra)",
+  "author": "nestra, after Peter Ganine's Gothic chess set (1959); prepared by Marc Infield",
+  "source": "https://www.thingiverse.com/thing:2821647",
+  "license": "CC BY",
+  "attribution": "\"Gothic Chess Set\" by nestra on Thingiverse (thing:2821647)",
+  "notes": "Sculpted after Peter Ganine's Gothic chess set (1959). Freeform pieces: most of every piece is carved by indexed passes rather than turned; hand finishing expected.",
+  "up": "Z",
+  "sourceDir": "../../sources/thingiverse/2821647",
+  "licenseFiles": [
+    "LICENSE.txt",
+    "README.txt"
+  ],
+  "changes": "rotated so the piece lies along the X axis with its base at X = 0, centred on the axis, the knight turned so its face points +Z, and saved as binary STL in mm (shape and size unchanged); the *_Final files are used; small holes filled.",
+  "pieces": {
+    "king": [
+      {
+        "file": "files/Gothic_King_Final.stl"
+      }
+    ],
+    "queen": [
+      {
+        "file": "files/Gothic_Queen_Final.stl"
+      }
+    ],
+    "bishop": [
+      {
+        "file": "files/Gothic_Bishop_Final.stl"
+      }
+    ],
+    "knight": [
+      {
+        "file": "files/Gothic_Knight_Final.stl"
+      }
+    ],
+    "rook": [
+      {
+        "file": "files/Gothic_Rook_Final.stl"
+      }
+    ],
+    "pawn": [
+      {
+        "file": "files/Gothic_Pawn_Final.stl"
+      }
+    ]
+  }
+}

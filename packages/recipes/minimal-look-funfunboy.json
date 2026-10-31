@@ -1,0 +1,49 @@
+{
+  "id": "minimal-look-funfunboy",
+  "version": "0.1.0",
+  "name": "Minimal Look (FunFunBoy)",
+  "author": "FunFunBoy; prepared by Marc Infield",
+  "source": "https://www.thingiverse.com/thing:2552392",
+  "license": "CC BY-NC",
+  "attribution": "\"Minimal Look Chess Set\" by FunFunBoy on Thingiverse (thing:2552392)",
+  "notes": "Non-commercial use only (CC BY-NC). Knight: not round, so it is carved by indexed passes rather than turned; hand finishing expected.",
+  "up": "Z",
+  "sourceDir": "../../sources/thingiverse/2552392",
+  "licenseFiles": [
+    "LICENSE.txt",
+    "README.txt"
+  ],
+  "changes": "rotated so the piece lies along the X axis with its base at X = 0, centred on the axis, the knight turned so its face points +Z, and saved as binary STL in mm (shape and size unchanged).",
+  "pieces": {
+    "king": [
+      {
+        "file": "files/King.stl"
+      }
+    ],
+    "queen": [
+      {
+        "file": "files/Queen.stl"
+      }
+    ],
+    "bishop": [
+      {
+        "file": "files/Bishop.stl"
+      }
+    ],
+    "knight": [
+      {
+        "file": "files/Knight.stl"
+      }
+    ],
+    "rook": [
+      {
+        "file": "files/Rook.stl"
+      }
+    ],
+    "pawn": [
+      {
+        "file": "files/Pawn.stl"
+      }
+    ]
+  }
+}

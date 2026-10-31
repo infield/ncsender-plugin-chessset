@@ -22,9 +22,13 @@ The first time it opens, the plugin asks for:
 
 The values shown are an example machine. Edit them to match yours. You can change them later in the **Machine** section.
 
-## Get and import a model package
+## Get a chess set
 
-The chess-piece models are not inside the plugin. They come from the [chess-set library](https://github.com/infield/chessset-library), one package per set style (Staunton for now):
+The chess-piece models are not inside the plugin. They come from the [chess-set library](https://github.com/infield/chessset-library), one package per set style.
+
+**From the library (easiest):** in the **Chess set** section, click **Browse library**, then **Install** next to a set. If you install several, pick the one in use from the same section.
+
+**By hand** (offline, or your own set):
 
 1. In the library's list of sets, open the set's release and download its ZIP (for example `staunton-clarkerubber-0.1.0.zip`).
 2. Unzip it. You get a folder holding `chess-set.json`, six `.stl` files and `LICENSE`.
@@ -46,7 +50,7 @@ Enter the queen's base diameter, the stock length, shape and width, the chuck an
 
 **Download files** lists the same files; each click downloads one.
 
-**Connecting necks** (under Allowances): on puts a thin rod (default 7.6 mm / 0.3 in) in each gap so the blank stays in one piece while it is cut; off leaves the gaps empty. This is a choice until the files have been tested in Rotary CAM.
+The gaps between pieces are left empty; Rotary CAM supplies the support between them.
 
 Files are ASCII STL in mm. X is the rotary axis, and the first piece's base is at X = 0. Export is unavailable while a job is running.
 

@@ -5,6 +5,13 @@ export const PLUGIN_ID = 'com.infield.chessset';
 export const EXPORT_ROOT = 'chess set';
 export const PACKAGE_ROOT = '.chess-set-creator/sets';
 
+// The chess-set library (spec §5.9). Files are read from
+// raw.githubusercontent.com, which allows cross-origin reads; release ZIPs
+// don't (§12).
+export const LIBRARY_REPO = 'infield/chessset-library';
+export const LIBRARY_RAW = `https://raw.githubusercontent.com/${LIBRARY_REPO}`;
+export const LIBRARY_INDEX = `${LIBRARY_RAW}/main/library.json`;
+
 // Piece roles in the K, Q, B, N, R, P order the planner uses everywhere.
 export const ROLES = ['king', 'queen', 'bishop', 'knight', 'rook', 'pawn'];
 export const ROLE_LETTER = { king: 'K', queen: 'Q', bishop: 'B', knight: 'N', rook: 'R', pawn: 'P' };
@@ -39,8 +46,4 @@ export const DEFAULT_INPUTS = Object.freeze({
   gap: 10,
   radialAllowance: 1.5,
   sides: 'both',
-  // Connecting necks (spec §5.5 outcome B). A switch until Phase 0 picks
-  // the outcome: on = B (necks in the STL), off = A (empty gaps).
-  neckEnabled: true,
-  neckDiameter: 7.6,
 });
