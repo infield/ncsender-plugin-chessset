@@ -3,15 +3,16 @@
 // Usage: npm run ui-check [-- --until=import|plan]
 //   CSC_CHROME=/path/to/chrome overrides the installed Chrome.
 //
-// Runs steps 1–8 (plus the bad-package and jaw-set checks).
-// Steps 9–11 (export) are added in Phase 5.
+// Runs steps 1–12, with extra checks for bad packages, stale styles, jaw
+// sets, a real download and the running-job refusal.
+// --until=import stops after the import steps; --until=plan skips export.
 import { chromium } from 'playwright-core';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { startMock } from './mock-ncsender.mjs';
 
 const PORT = 8777;
-const until = (process.argv.find((a) => a.startsWith('--until=')) || '--until=plan').slice(8);
+const until = (process.argv.find((a) => a.startsWith('--until=')) || '--until=all').slice(8);
 const PACKAGE = resolve('packages/staunton-clarkerubber');
 const BAD = resolve('tests/fixtures/bad-packages');
 
@@ -23,7 +24,7 @@ if (!existsSync('com.infield.chessset/lib/app.js')) {
 // ncSender set to imperial at the start; step 4 switches it to metric.
 const mock = await startMock({ port: PORT, quiet: true, units: 'imperial' });
 const browser = await chromium.launch(process.env.CSC_CHROME ? { executablePath: process.env.CSC_CHROME } : { channel: 'chrome' });
-const page = await browser.newPage({ viewport: { width: 1400, height: 950 } });
+const page = await browser.newPage({ viewport: { width: 1400, height: 950 }, acceptDownloads: true });
 const problems = [];
 page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
 page.on('console', (m) => { if (m.type() === 'error') problems.push(`console error: ${m.text()} ${m.location().url || ''}`.trim()); });
@@ -201,6 +202,62 @@ try {
     expect((await text('[data-pkg="name"]')) === '<script>x</script>', `shown: ${await text('[data-pkg="name"]')}`);
     expect((await page.locator('.csc-shell script').count()) === 0, 'a script element was created');
   });
+
+  if (until !== 'import' && until !== 'plan') {
+    const store = async () => (await (await fetch(mock.url + '__mock/store')).json()).files;
+    const inFolder = (files, folder) => Object.keys(files).filter((f) => f.startsWith(`chess set/${folder}/`)).map((f) => f.slice(`chess set/${folder}/`.length));
+    const waitExport = async () => {
+      await page.waitForFunction(() => !document.querySelector('[data-act="export"]')?.disabled || document.querySelector('[data-export-error]'), null, { timeout: 180000 });
+    };
+    let folder;
+
+    await step('9. export writes 10 STLs, 10 sidecars, layout.json and LICENSE-models.txt', async () => {
+      folder = await page.inputValue('input[name="jobName"]');
+      await page.click('[data-act="export"]');
+      await waitExport();
+      const names = inFolder(await store(), folder);
+      const stl = names.filter((n) => n.endsWith('.stl'));
+      const side = names.filter((n) => n.endsWith('.rotary.json'));
+      expect(stl.length === 10 && side.length === 10, `${stl.length} STLs, ${side.length} sidecars in "${folder}"`);
+      expect(names.includes('layout.json') && names.includes('LICENSE-models.txt'), names.join(', '));
+      expect((await text('[data-export-status]')).startsWith('Exported 22 files'), await text('[data-export-status]'));
+    });
+
+    await step('10. exporting again uses the "(2)" folder', async () => {
+      await page.click('[data-act="export"]');
+      await waitExport();
+      expect(inFolder(await store(), `${folder} (2)`).length === 22, 'no (2) folder with 22 files');
+    });
+
+    await step('11. a forced save failure offers Download files; no layout.json in that folder', async () => {
+      await fetch(mock.url + '__mock/fail-save', { method: 'POST', body: JSON.stringify({ after: 3 }) });
+      await page.click('[data-act="export"]');
+      await page.waitForSelector('[data-export-error]', { timeout: 180000 });
+      await page.waitForSelector('[data-download-list] [data-file="light_blank_01.stl"]');
+      expect(!inFolder(await store(), `${folder} (3)`).includes('layout.json'), 'incomplete folder has layout.json');
+      // The browser logs the forced 500 as a console error; that one is expected.
+      const forced = problems.filter((p) => /500 .*\/api\/gcode-files\/file\/save/.test(p));
+      expect(forced.length === 1, `expected one forced-failure log, got ${forced.length}`);
+      problems.splice(problems.indexOf(forced[0]), 1);
+    });
+
+    await step('11b. a Download files link downloads one blank STL', async () => {
+      const [download] = await Promise.all([page.waitForEvent('download', { timeout: 60000 }), page.click('[data-download-list] [data-file="light_blank_01.stl"]')]);
+      expect(download.suggestedFilename() === 'light_blank_01.stl', download.suggestedFilename());
+      const head = (await (await import('node:fs/promises')).readFile(await download.path(), 'utf8')).slice(0, 30);
+      expect(head.startsWith('solid light_blank_01'), head);
+    });
+
+    await step('11c. while a job runs, export and Download files are disabled with the §5.10 message', async () => {
+      await page.evaluate(() => window.postMessage({ type: 'server-state-update', state: { jobLoaded: { status: 'running' } } }, '*'));
+      await page.waitForSelector('[data-export-blocked]');
+      expect((await text('[data-export-blocked]')) === 'Export is unavailable while a job is running.', await text('[data-export-blocked]'));
+      expect(await page.locator('[data-act="export"]').isDisabled(), 'export enabled during a job');
+      expect(await page.locator('[data-act="download"]').isDisabled(), 'download enabled during a job');
+      await page.evaluate(() => window.postMessage({ type: 'server-state-update', state: { jobLoaded: { status: 'idle' } } }, '*'));
+      await page.waitForSelector('[data-export-blocked]', { state: 'detached' });
+    });
+  }
 
   await step('12. no forbidden calls in the mock log', async () => {
     const bad = mock.log.filter((l) => l.startsWith('FORBIDDEN'));

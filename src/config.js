@@ -39,4 +39,8 @@ export const DEFAULT_INPUTS = Object.freeze({
   gap: 10,
   radialAllowance: 1.5,
   sides: 'both',
+  // Connecting necks (spec §5.5 outcome B). A switch until Phase 0 picks
+  // the outcome: on = B (necks in the STL), off = A (empty gaps).
+  neckEnabled: true,
+  neckDiameter: 7.6,
 });

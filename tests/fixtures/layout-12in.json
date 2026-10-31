@@ -1,0 +1,290 @@
+{
+  "format": "chess-set-creator-layout",
+  "formatVersion": 1,
+  "createdAt": "2026-10-30T12:00:00.000Z",
+  "plugin": {
+    "id": "com.infield.chessset",
+    "version": "0.1.0"
+  },
+  "package": {
+    "id": "staunton-clarkerubber",
+    "version": "0.1.0",
+    "name": "Staunton (clarkerubber)"
+  },
+  "units": "mm",
+  "frame": "x-axis-base-at-origin-v1",
+  "turningAxis": "X",
+  "onAxis": "model-origin",
+  "scale": 1.27,
+  "queenBaseDiameter": 38.1,
+  "stock": {
+    "length": 304.8,
+    "width": 50.8,
+    "shape": "square",
+    "jawSet": "alternate"
+  },
+  "reservations": {
+    "chuck": 25.4,
+    "tailstock": 19.05
+  },
+  "gap": 10,
+  "radialAllowance": 1.5,
+  "supportOutcome": "B",
+  "neckDiameter": 7.6,
+  "coveredTops": [
+    "queen",
+    "bishop"
+  ],
+  "blanks": [
+    {
+      "side": "light",
+      "index": 1,
+      "file": "light_blank_01.stl",
+      "pieces": [
+        {
+          "role": "king",
+          "xStart": 0,
+          "xEnd": 99.06
+        },
+        {
+          "role": "queen",
+          "xStart": 109.06,
+          "xEnd": 195.42
+        },
+        {
+          "role": "pawn",
+          "xStart": 205.42,
+          "xEnd": 260.03
+        }
+      ],
+      "usedLength": 260.03,
+      "leftoverLength": 0.32
+    },
+    {
+      "side": "light",
+      "index": 2,
+      "file": "light_blank_02.stl",
+      "pieces": [
+        {
+          "role": "rook",
+          "xStart": 0,
+          "xEnd": 62.23
+        },
+        {
+          "role": "pawn",
+          "xStart": 72.23,
+          "xEnd": 126.84
+        },
+        {
+          "role": "pawn",
+          "xStart": 136.84,
+          "xEnd": 191.45
+        },
+        {
+          "role": "pawn",
+          "xStart": 201.45,
+          "xEnd": 256.06
+        }
+      ],
+      "usedLength": 256.06,
+      "leftoverLength": 4.29
+    },
+    {
+      "side": "light",
+      "index": 3,
+      "file": "light_blank_03.stl",
+      "pieces": [
+        {
+          "role": "rook",
+          "xStart": 0,
+          "xEnd": 62.23
+        },
+        {
+          "role": "pawn",
+          "xStart": 72.23,
+          "xEnd": 126.84
+        },
+        {
+          "role": "pawn",
+          "xStart": 136.84,
+          "xEnd": 191.45
+        },
+        {
+          "role": "pawn",
+          "xStart": 201.45,
+          "xEnd": 256.06
+        }
+      ],
+      "usedLength": 256.06,
+      "leftoverLength": 4.29
+    },
+    {
+      "side": "light",
+      "index": 4,
+      "file": "light_blank_04.stl",
+      "pieces": [
+        {
+          "role": "bishop",
+          "xStart": 0,
+          "xEnd": 74.93
+        },
+        {
+          "role": "bishop",
+          "xStart": 84.93,
+          "xEnd": 159.86
+        },
+        {
+          "role": "knight",
+          "xStart": 169.86,
+          "xEnd": 244.79
+        }
+      ],
+      "usedLength": 244.79,
+      "leftoverLength": 15.56
+    },
+    {
+      "side": "light",
+      "index": 5,
+      "file": "light_blank_05.stl",
+      "pieces": [
+        {
+          "role": "knight",
+          "xStart": 0,
+          "xEnd": 74.93
+        },
+        {
+          "role": "pawn",
+          "xStart": 84.93,
+          "xEnd": 139.54
+        }
+      ],
+      "usedLength": 139.54,
+      "leftoverLength": 120.81
+    },
+    {
+      "side": "dark",
+      "index": 1,
+      "file": "dark_blank_01.stl",
+      "pieces": [
+        {
+          "role": "king",
+          "xStart": 0,
+          "xEnd": 99.06
+        },
+        {
+          "role": "queen",
+          "xStart": 109.06,
+          "xEnd": 195.42
+        },
+        {
+          "role": "pawn",
+          "xStart": 205.42,
+          "xEnd": 260.03
+        }
+      ],
+      "usedLength": 260.03,
+      "leftoverLength": 0.32
+    },
+    {
+      "side": "dark",
+      "index": 2,
+      "file": "dark_blank_02.stl",
+      "pieces": [
+        {
+          "role": "rook",
+          "xStart": 0,
+          "xEnd": 62.23
+        },
+        {
+          "role": "pawn",
+          "xStart": 72.23,
+          "xEnd": 126.84
+        },
+        {
+          "role": "pawn",
+          "xStart": 136.84,
+          "xEnd": 191.45
+        },
+        {
+          "role": "pawn",
+          "xStart": 201.45,
+          "xEnd": 256.06
+        }
+      ],
+      "usedLength": 256.06,
+      "leftoverLength": 4.29
+    },
+    {
+      "side": "dark",
+      "index": 3,
+      "file": "dark_blank_03.stl",
+      "pieces": [
+        {
+          "role": "rook",
+          "xStart": 0,
+          "xEnd": 62.23
+        },
+        {
+          "role": "pawn",
+          "xStart": 72.23,
+          "xEnd": 126.84
+        },
+        {
+          "role": "pawn",
+          "xStart": 136.84,
+          "xEnd": 191.45
+        },
+        {
+          "role": "pawn",
+          "xStart": 201.45,
+          "xEnd": 256.06
+        }
+      ],
+      "usedLength": 256.06,
+      "leftoverLength": 4.29
+    },
+    {
+      "side": "dark",
+      "index": 4,
+      "file": "dark_blank_04.stl",
+      "pieces": [
+        {
+          "role": "bishop",
+          "xStart": 0,
+          "xEnd": 74.93
+        },
+        {
+          "role": "bishop",
+          "xStart": 84.93,
+          "xEnd": 159.86
+        },
+        {
+          "role": "knight",
+          "xStart": 169.86,
+          "xEnd": 244.79
+        }
+      ],
+      "usedLength": 244.79,
+      "leftoverLength": 15.56
+    },
+    {
+      "side": "dark",
+      "index": 5,
+      "file": "dark_blank_05.stl",
+      "pieces": [
+        {
+          "role": "knight",
+          "xStart": 0,
+          "xEnd": 74.93
+        },
+        {
+          "role": "pawn",
+          "xStart": 84.93,
+          "xEnd": 139.54
+        }
+      ],
+      "usedLength": 139.54,
+      "leftoverLength": 120.81
+    }
+  ]
+}

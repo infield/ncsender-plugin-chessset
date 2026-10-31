@@ -1,6 +1,6 @@
 // To-scale side view of one blank (implementation plan P4.10; AC-UI-01).
 // SVG user units are mm: viewBox = 0 0 <stockLength> <stockWidth>.
-import { PROFILE_STEP } from '../config.js';
+import { NECK_OVERLAP, PROFILE_STEP } from '../config.js';
 import { ROLE_NAME } from './messages.js';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -26,7 +26,7 @@ export function piecePath(top, bottom, axialLength, scale, x0, cy) {
 
 // `blank` from plan(); `pieces` are the installed package's unscaled
 // pieces (with profile); `scale` from plan().
-export function blankPreview({ blank, inputs, pieces, scale }) {
+export function blankPreview({ blank, inputs, pieces, scale, neck = null }) {
   const { stockLength: L, stockWidth: W, chuckRes, tailRes } = inputs;
   const cy = W / 2;
   const svg = el('svg', { viewBox: `0 0 ${n(L)} ${n(W)}`, role: 'img', 'aria-label': `Blank ${blank.index} side view, to scale` }, 'csc-pv');
@@ -34,6 +34,14 @@ export function blankPreview({ blank, inputs, pieces, scale }) {
   svg.append(el('rect', { x: 0, y: 0, width: n(chuckRes), height: n(W) }, 'csc-pv-res'));
   svg.append(el('rect', { x: n(L - tailRes), y: 0, width: n(tailRes), height: n(W) }, 'csc-pv-res'));
   svg.append(el('line', { x1: 0, y1: n(cy), x2: n(L), y2: n(cy) }, 'csc-pv-axis'));
+  // Connecting necks: a rod in each gap, overlapping each neighbour.
+  if (neck) {
+    for (let j = 1; j < blank.pieces.length; j++) {
+      const x0 = chuckRes + blank.pieces[j - 1].xEnd - NECK_OVERLAP;
+      const x1 = chuckRes + blank.pieces[j].xStart + NECK_OVERLAP;
+      svg.append(el('rect', { x: n(x0), y: n(cy - neck / 2), width: n(x1 - x0), height: n(neck) }, 'csc-pv-neck'));
+    }
+  }
   for (const p of blank.pieces) {
     const src = pieces[p.role];
     // Packages imported before 0.1.4 have no side view; mirror the profile.

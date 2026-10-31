@@ -143,3 +143,30 @@ test('plan() on 18 in stock: under 100 ms (advisory)', (t) => {
   t.diagnostic(`plan() took ${ms.toFixed(1)} ms`);
   if (ms >= 100) t.diagnostic('ADVISORY: slower than the 100 ms target');
 });
+
+// Outcome B: connecting necks on (neckEnabled), with the Appendix B sizes.
+test('outcome B: a 31 mm neck is wider than the pawn base (30.48)', () => {
+  const r = run({ neckEnabled: true, neckDiameter: 31 });
+  assert.deepEqual(codes(r), ['NECK_WIDER_THAN_BASE']);
+  assert.equal(r.errors[0].role, 'pawn');
+  assert.ok(Math.abs(r.errors[0].values.base - 30.48) < 1e-9);
+});
+
+test('outcome B: covered tops at the defaults are queen and bishop', () => {
+  const r = run({ neckEnabled: true, neckDiameter: 7.6 });
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(r.coveredTops, ['queen', 'bishop']);
+});
+
+test('outcome B: the neck diameter is range-checked against 3 mm and the stock width', () => {
+  assert.deepEqual(run({ neckEnabled: true, neckDiameter: 2 }).errors.map((e) => [e.code, e.field]), [['RANGE', 'neckDiameter']]);
+  assert.deepEqual(run({ neckEnabled: true, neckDiameter: 60 }).errors.map((e) => [e.code, e.field]), [['RANGE', 'neckDiameter']]);
+  assert.deepEqual(run({ neckEnabled: true, neckDiameter: null }).errors.map((e) => e.values.kind), ['number']);
+});
+
+test('outcome A: no neck fields in the result and the same plan as before', () => {
+  const r = run({ stockLength: 12 * IN, neckEnabled: false, neckDiameter: 99 });
+  assert.equal(r.coveredTops, undefined);
+  assert.equal(r.blanks[0].smallestSection, undefined);
+  assert.deepEqual(lists(r), ['K Q P', 'R P P P', 'R P P P', 'B B N', 'N P']);
+});

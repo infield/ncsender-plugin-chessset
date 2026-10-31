@@ -2,6 +2,13 @@
 
 Versioning: `0.1.x` while planning is built and tested. **Every build that gets zipped increments the patch number** (0.1.0 → 0.1.1 → …), and the ZIP is named with the version. Set `0.2.0` by hand once the 12 in test blank has been cut.
 
+## 0.1.7 — 2026-10-30 (beta)
+- Export: **Export to File Manager** writes `chess set/<job name>/` (one STL per blank, a `.rotary.json` setup file each, `layout.json`, the model licence); a repeat export goes to a new `(2)` folder
+- **Download files**: the same files as separate downloads, one per click
+- **Connecting necks** on/off under Allowances, with the neck diameter: on adds a rod in each gap (shown in the side views); the piece table marks tops the neck covers, and each card shows the blank's smallest section
+- Export and Download files are disabled while a job is running
+- Not yet tested in Rotary CAM
+
 ## 0.1.6 — 2026-10-30
 - Model packages now come from the chess-set library (github.com/infield/chessset-library), one package per set style; the README and the "no package" hint point there
 - The Staunton set is now version 0.1.0 (beta), like the plugin. If you imported 1.0.0, import the new ZIP once; it replaces it as the set in use

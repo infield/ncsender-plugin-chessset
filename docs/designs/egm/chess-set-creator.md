@@ -121,7 +121,8 @@ Any change to piece size or stock length means redoing all of it. Chess Set Crea
 | Chuck reservation | [C] | 25.4 mm (1 in) | 0–200 mm | Includes the jaw grip, the holding tab and the parting neck. |
 | Tailstock reservation | [C] | 19.05 mm (0.75 in) | 0–200 mm | |
 | Gap | [C] | 10.0 mm (0.39 in) | 6.35–50 mm | Must let Rotary CAM's finishing cutter reach the next piece's base face and the previous piece's top: at least the cutter diameter; any extra clearance is the user's choice. Assumes a 6.35 mm (¼ in) cutter [O-4]. Parting cuts happen only at the two outer ends (§5.5). |
-| Connecting-neck diameter | [O-2] | 7.6 mm (0.3 in) | 3 mm – stock width | Exists only under outcome B (§5.5). Matches Rotary CAM's default parting-neck diameter, 0.3 in (owner-reported). |
+| Connecting necks | [C] (owner, 2026-10-30) | On | on / off | Until Phase 0 picks the outcome (§5.5): on = outcome B, off = outcome A. Removed once the outcome is known. |
+| Connecting-neck diameter | [O-2] | 7.6 mm (0.3 in) | 3 mm – stock width | Shown and checked only while connecting necks are on (outcome B, §5.5). Matches Rotary CAM's default parting-neck diameter, 0.3 in (owner-reported). |
 | Radial allowance | [C] | 1.5 mm (0.06 in) | 0–10 mm | Per side. |
 | Sides | [C] | Both | both / light / dark | "Light only" plans and exports the light side only. |
 
@@ -194,7 +195,7 @@ So a value shown as "needed" or "fits" is always true.
 
 Rotary CAM lets the user choose the turning axis (X/Y/Z) and "On axis: Model origin", which sets where the model sits radially (owner-reported).
 
-**Build gate.** The exporter (implementation plan Phase 5) is built only after Phase 0 has answered O-1 and O-2. Planning, import and preview (§5.1–§5.4, §5.6) don't depend on them. [C]
+**Build gate.** The exporter was planned to wait for Phase 0 (O-1, O-2). The owner has no access to Rotary CAM yet (it is unreleased), so on 2026-10-30 the owner asked for export now: both outcomes are built, behind a **Connecting necks** on/off input (§5.1), with Download files at all times (§5.8). Phase 0 still decides the outcome and is still needed for AC-EXP-04. [C]
 
 **Rules for the exported STL.** What `layout.json` and each sidecar record is listed in §5.8 and §5.11.
 - **Format:** ASCII STL in mm, one file per blank. ASCII is required because the File Manager stores text only (§12). Vertex coordinates have at least 4 decimal places. [P]
@@ -206,7 +207,7 @@ Rotary CAM lets the user choose the turning axis (X/Y/Z) and "On axis: Model ori
   - **A. Rotary CAM leaves a support between separate bodies,** as it does at the two outer ends. The plugin exports the pieces as separate bodies with empty gaps, and the support is sized in Rotary CAM. There is no connecting-neck input and no covered-top rule.
   - **B. Rotary CAM cuts through empty gaps.** The plugin adds connecting necks (below).
 
-  Only the outcome Phase 0 selects is built. The spec is then revised to keep that outcome and delete the other. [C] Until then, B is the working assumption.
+  Until Phase 0, both outcomes are built and the user chooses with the **Connecting necks** input: on (the default) is B, off is A. After Phase 0, the input is removed, the spec keeps the selected outcome, and the other is deleted. [C] (owner, 2026-10-30, replacing "only the selected outcome is built" (A1) for this interim)
 - **Connecting necks (outcome B):** each gap holds a cylinder of the connecting-neck diameter, overlapping each neighbour by 0.5 mm. This keeps the blank one connected body, so roughing cannot cut through a gap and part the blank early. [P]
   - A piece's top is **covered** when `scaled top diameter < connecting-neck diameter`. The connecting neck covers the top, which is finished by hand after parting. With the Staunton package at the default 38.1 mm queen base, this affects the queen (5.3 mm top) and the bishop (5.0 mm top).
   - The plan lists the pieces whose top is covered.
@@ -326,7 +327,8 @@ v1 keeps the last job's inputs in settings, so the dialog reopens with them. [P]
 - **Download files** [C] (A2): the plugin can offer the export as separate browser downloads: each blank STL, its sidecar, `layout.json` and `LICENSE-models.txt`.
   - The files are listed as links. Each click builds and downloads one file; nothing downloads without a click. [P]
   - It is offered after a failed save, and any files already saved stay in place.
-  - It is not offered as an everyday route to other CAM programs: v1 supports Rotary CAM in ncSender only (DISC-7, owner 2026-10-30). If Phase 0 finds that Rotary CAM can't open files from the File Manager (O-1), Download files becomes the route into Rotary CAM's "Open STL…" and is then shown at all times. [P]
+  - **Until Phase 0** it is shown at all times, next to **Export to File Manager**, so the owner can get and check the files before Rotary CAM is available (owner, 2026-10-30). [C]
+  - After Phase 0 it is offered only after a failed save: v1 supports Rotary CAM in ncSender only (DISC-7). If Phase 0 finds that Rotary CAM can't open files from the File Manager (O-1), Download files becomes the route into Rotary CAM's "Open STL…" and stays shown at all times. [P]
   - There is no ZIP.
 - Export is allowed only when the plan has no errors. [P]
 
@@ -570,7 +572,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
 | AC-EXP-06 | Outcome B only: the plan lists the pieces whose top is covered by the connecting neck, and each blank's smallest section. | §5.3, §5.5 |
 | AC-EXP-07 | A forced save failure offers Download files, and the incomplete folder has no `layout.json`. | §5.8 |
 | AC-EXP-08 | Every blank STL has a `.rotary.json` sidecar with the same base name. It matches §5.11, and its stock and placement equal the plan's per-blank card. | §5.11 |
-| AC-EXP-09 | **Download files** lists one link per file, is offered after a failed save (and at all times only if O-1 requires it), and never downloads without a click. | §5.8 |
+| AC-EXP-09 | **Download files** lists one link per file and never downloads without a click. Until Phase 0 it is shown at all times; after Phase 0 it is offered after a failed save (and at all times only if O-1 requires it). | §5.8 |
 | AC-REL-01 | The plugin ZIP installs from its GitHub release URL, and its manifest has the `repository` field. | §5.9 |
 
 ## 10. Prepared reference package (v1 deliverable)
@@ -760,7 +762,7 @@ One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as A
 | D2 | Worker | Detail 1. | ncCAM pattern (`src/index.js:8–66`). No separate worker file and no cross-origin worker URL. |
 | D3 | Free folder | One `GET /api/gcode-files`. The taken names are the `name` of each entry with `type === 'folder'` directly under `chess set`. Take the first of `<name>`, `<name> (2)`, … that isn't taken. | Adapted from ncCAM's `freePath` (`src/ui/app.js:883–895`), which uses one listing, for files only. It avoids a logged 404 for each probe. The tree's shape is verified (§12). |
 | D4 | Export write order | `LICENSE-models.txt` → each blank STL followed by its sidecar, light side first → `layout.json`. | §5.8. `layout.json` last marks a complete job. |
-| D5 | Support outcome | Phase 0 decides it. Only the selected outcome is built (owner decision A1). Until Phase 5, the planner has no connecting-neck input. | §5.5 |
+| D5 | Support outcome | Phase 0 decides it. Until then both are built behind `inputs.neckEnabled` (true = B, the default; false = A), at the owner's request on 2026-10-30; after Phase 0 the input and the unused outcome are removed (A1). | §5.5 |
 | D6 | Package storage root | `.chess-set-creator/sets` | Dot-folders are hidden from the tree; verified (§12). |
 | D7 | Lengths in the planner | Integer micrometres (`Math.round(mm × 1000)`). | Equal-length pieces (the bishop and the knight) must compare exactly equal. |
 | D8 | Rounding | **Displays:** half up; mm to 1 decimal, inches to 2. **Minimums:** rounded up. **Maximums:** rounded down. **Input fields:** mm to 2 decimals and inches to 3, trailing zeros trimmed. | §5.4. Input fields are never re-read from their displayed text (P4.10). |
@@ -913,7 +915,7 @@ Write the Size, Stock, Allowances, Sides and Machine sections (P4.10), the plan 
 
 **M1 released (2026-10-30):** the owner approved the full release. `infield/ncsender-plugin-chessset` made public; release `v0.1.5` with the plugin ZIP. `infield/chessset-staunton-package` created (public); release `v1.0.0` with `staunton-clarkerubber-1.0.0.zip`, which was checked to import with the plugin's import code before publishing. The same day the owner made it a general library: renamed `infield/chessset-library` (GitHub redirects the old name), the set moved to `sets/staunton-clarkerubber/`, and the release re-tagged per set. The owner then kept the set in beta: it is version `0.1.0`, released as `staunton-clarkerubber-v0.1.0` (titled beta); the `1.0.0` releases were removed. AC-REL-01 and AC-PKG-02 remain manual checks for the owner.
 
-#### Phase 5 — Export (needs Phase 0)
+#### Phase 5 — Export (built before Phase 0, at the owner's request)
 
 Write:
 - `src/blank.js`, `sidecar.js`, `layout.js`, `exporter.js`
@@ -922,6 +924,8 @@ Write:
 - the blank, sidecar, layout and exporter tests
 
 **Exit:** `npm test` and `npm run ui-check` pass in full, and the Phase 5 acceptance criteria pass.
+
+**Result (2026-10-30):** built as 0.1.7 with both outcomes behind the Connecting necks input and Download files shown at all times (§5.5, §5.8). `npm test` and `ui-check` pass in full, including a real browser download and the running-job refusal. All ten 12 in blanks (necks on and off) were rebuilt from the package and checked: minX 0, maxX equal to the used length, on the axis, every shell closed, 7–16 MB each (AC-EXP-03). Still open: Phase 0 (O-1, O-2), AC-EXP-04 in Rotary CAM, and removing the input once the outcome is known.
 
 #### Phase 6 — Shop validation
 
@@ -1008,7 +1012,7 @@ Unknown top-level fields, including `sha256`, are ignored.
 - `queenBase`, `stockLength`, `stockShape`, `stockWidth`
 - `chuckRes`, `tailRes`, `gap`, `radialAllowance`
 - `sides`: `'light'`, `'dark'` or `'both'`
-- outcome B only: `neckDiameter`
+- `neckEnabled` (boolean; true = outcome B) and, when it is true, `neckDiameter`. Until Phase 0 both outcomes run behind this input (D5).
 
 `pieces` holds the installed package's measured dimensions. `machine` is `{maxBlankLength, jaws:[{name, min, max}]}`.
 
@@ -1171,7 +1175,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
   1. **Package:** a read-only line for the installed package (a package selector is deferred to v2), the **Import package folder** button, import progress and errors.
   2. **Size:** queen base diameter.
   3. **Stock:** length, shape and width, with a jaw-set readout.
-  4. **Allowances:** chuck reservation, tailstock reservation, gap, radial allowance, and, under outcome B, connecting-neck diameter.
+  4. **Allowances:** chuck reservation, tailstock reservation, gap, radial allowance, the **Connecting necks** on/off input (until Phase 0), and, while it is on, the connecting-neck diameter.
   5. **Sides:** both / light / dark.
   6. **Machine:** collapsed; the same fields as the setup screen, with a **Save** button.
 - **Input fields:**
@@ -1427,7 +1431,7 @@ These tests use a fake `fm` (with a fixed tree) and a fake `call`, both of which
 | AC-EXP-04 | 5 / 6 | Manual, in Rotary CAM |
 | AC-EXP-06 | 5 (outcome B) | Unit test (covered tops); manual check of the piece table |
 | AC-EXP-08 | 5 | Unit test (P5.5 sidecar); manual check of Rotary CAM reading it, after O-13 is resolved |
-| AC-EXP-09 | 5 | Unit test (P5.6 Download files); manual check in the desktop app and a browser |
+| AC-EXP-09 | 5 | Unit test (P5.6 Download files); ui-check step 11b (a real download); manual check in the desktop app and a browser |
 | AC-REL-01 | M1 release | Manual: install from the release URL |
 
 #### P5.8 `tools/ui-check.mjs`
@@ -1447,9 +1451,11 @@ These tests use a fake `fm` (with a fixed tree) and a fake `call`, both of which
 6. Type gap 5: a `RANGE` message appears. Set the gap back to 10.
 7. Close the dialog, reopen it through the harness, and check that the inputs are restored. Close it immediately after an edit, so the close-time flush is what saves it.
 8. Import `tests/fixtures/bad-packages/script-name/`. The name shows literally as `<script>x</script>`.
-9. *(Phase 5)* Export. `GET /__mock/store` holds 10 STLs, 10 sidecars, `layout.json` and `LICENSE-models.txt`.
+9. Export. `GET /__mock/store` holds 10 STLs, 10 sidecars, `layout.json` and `LICENSE-models.txt`.
 10. Export again. The `(2)` folder is used.
-11. `POST /__mock/fail-save {after:3}`, then export. **Download files** is offered.
+11. `POST /__mock/fail-save {after:3}`, then export. **Download files** is offered, and the incomplete folder has no `layout.json`. The browser's console error for that forced 500 is expected and removed from the error count.
+    11b. Click `light_blank_01.stl` in the list: the browser downloads it, and it starts with `solid light_blank_01`.
+    11c. Post a `server-state-update` with `jobLoaded.status: 'running'`: both actions are disabled with the §5.10 message, and enabled again when the job stops.
 12. The mock log has no `FORBIDDEN` lines.
 
 ### P6. Order of work and checkpoints

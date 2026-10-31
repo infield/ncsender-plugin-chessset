@@ -7,7 +7,11 @@ export const ROLE_NAME = { king: 'King', queen: 'Queen', bishop: 'Bishop', knigh
 const lim = (mm, unit) => `${fieldText(mm, unit)} ${unit}`;
 
 // "range 6.35–50 mm", "at least 50 mm", "greater than 0 mm".
-export function rangeHint(field, unit) {
+export function rangeHint(field, unit, inputs = {}) {
+  if (field === 'neckDiameter') {
+    const w = inputs.stockWidth;
+    return Number.isFinite(w) ? `range ${fieldText(3, unit)}–${lim(w, unit)}` : `at least ${lim(3, unit)}`;
+  }
   const f = RANGE_FIELDS.find((r) => r.field === field);
   if (!f) return '';
   if (f.exclusiveMin) return `greater than ${lim(f.min, unit)}`;
@@ -63,6 +67,9 @@ export function planMessages(result, inputs, unit) {
         text = `Stock width ${fmtOne(v.width, unit)} doesn't fit any jaw set (${v.jaws.map((j) => jawRange(j, unit)).join('; ')}). Nearest width that fits: ${nearest}.`;
         break;
       }
+      case 'NECK_WIDER_THAN_BASE':
+        text = `Connecting neck Ø ${fmtOne(v.neck, unit)} is wider than the ${name} base (${fmtOne(v.base, unit)}). Use a neck no wider than ${fmtMax(v.base, unit)}.`;
+        break;
       default:
         text = e.code;
     }

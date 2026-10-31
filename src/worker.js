@@ -3,7 +3,8 @@
 // the page reads every file and posts its contents.
 import { ROLES } from './config.js';
 import { checkPiece } from './measure.js';
-import { fromBase64, parseStl, toBase64, writeBinary } from './stl.js';
+import { buildBlank } from './blank.js';
+import { fromBase64, parseStl, toBase64, writeAscii, writeBinary } from './stl.js';
 
 export function createHandlers() {
   const meshes = new Map(); // package key → {role: tris}
@@ -27,6 +28,13 @@ export function createHandlers() {
       for (const role of ROLES) set[role] = parseStl(fromBase64(b64[role]));
       meshes.set(key, set);
       return true;
+    },
+
+    // {key, blank, scale, neck?, name} → the blank as ASCII STL text.
+    buildBlankText({ key, blank, scale, neck, name }) {
+      const set = meshes.get(key);
+      if (!set) throw new Error(`package ${key} is not loaded`);
+      return writeAscii(name, buildBlank(blank, set, scale, neck));
     },
   };
 

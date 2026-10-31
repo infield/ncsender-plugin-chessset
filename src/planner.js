@@ -2,9 +2,10 @@
 // Pure: no DOM, no network. Inputs and outputs are in mm; packing runs in
 // integer micrometres so equal-length pieces compare exactly (D7).
 //
-// Outcome B additions (connecting-neck input and check, covered tops,
-// smallest section) are added in Phase 5, only if Phase 0 selects outcome B.
-import { COUNTS_PER_SIDE, ROLES } from './config.js';
+// Connecting necks (outcome B) apply when inputs.neckEnabled is true: the
+// neck-diameter range and check, covered tops and each blank's smallest
+// section. With it off (outcome A) none of these appear.
+import { COUNTS_PER_SIDE, NECK_OVERLAP, PROFILE_STEP, ROLES } from './config.js';
 import { ceilTo, floorTo } from './units.js';
 
 // Rule 1: per-field ranges. Stock length's upper limit and the jaw fit are
@@ -28,6 +29,15 @@ function rangeErrors(inputs) {
     else if (exclusiveMin ? v <= min : v < min) kind = exclusiveMin ? 'greaterThan' : max === null ? 'atLeast' : 'between';
     else if (max !== null && v > max) kind = 'between';
     if (kind) errors.push({ code: 'RANGE', field, values: { label, kind, min, max } });
+  }
+  if (inputs.neckEnabled === true) {
+    const v = inputs.neckDiameter;
+    const w = inputs.stockWidth;
+    const max = typeof w === 'number' && Number.isFinite(w) ? w : null;
+    let kind = null;
+    if (typeof v !== 'number' || !Number.isFinite(v)) kind = 'number';
+    else if (v < 3 || (max !== null && v > max)) kind = max === null ? 'atLeast' : 'between';
+    if (kind) errors.push({ code: 'RANGE', field: 'neckDiameter', values: { label: 'Connecting-neck diameter', kind, min: 3, max } });
   }
   return errors;
 }
@@ -114,6 +124,28 @@ function pack(lengthsUm, gapUm, usableUm) {
   return best(COUNTS_PER_SIDE.slice());
 }
 
+// The smallest diameter along one blank (outcome B): every piece's scaled
+// profile, the necks in the gaps, and the larger of the two where a neck
+// overlaps a piece. Null when the pieces have no profiles.
+function smallestSection(placed, pieces, scale, neck) {
+  let min = placed.length > 1 ? neck : Infinity;
+  for (let j = 0; j < placed.length; j++) {
+    const prof = pieces[placed[j].role].profile;
+    if (!prof) return null;
+    const len = placed[j].xEnd - placed[j].xStart;
+    const neckBefore = j > 0;
+    const neckAfter = j < placed.length - 1;
+    for (let i = 0; i < prof.length; i++) {
+      const xa = i * PROFILE_STEP * scale;
+      const xb = Math.min((i + 1) * PROFILE_STEP * scale, len);
+      let d = 2 * prof[i] * scale;
+      if ((neckBefore && xa < NECK_OVERLAP) || (neckAfter && xb > len - NECK_OVERLAP)) d = Math.max(d, neck);
+      if (d < min) min = d;
+    }
+  }
+  return min === Infinity ? null : min;
+}
+
 export function plan(inputs, pieces, machine) {
   const rangeErrs = rangeErrors(inputs);
   if (rangeErrs.length) return { errors: rangeErrs };
@@ -180,7 +212,18 @@ export function plan(inputs, pieces, machine) {
     }
   }
 
+  // Outcome B: the neck may not be wider than the smallest base.
+  const neckOn = inputs.neckEnabled === true;
+  const neck = inputs.neckDiameter;
+  if (neckOn) {
+    const narrowest = ROLES.reduce((a, r) => (scaled[r].baseDiameter < scaled[a].baseDiameter ? r : a), ROLES[0]);
+    if (neck > scaled[narrowest].baseDiameter) {
+      errors.push({ code: 'NECK_WIDER_THAN_BASE', role: narrowest, values: { neck, base: scaled[narrowest].baseDiameter } });
+    }
+  }
+
   const result = { errors, scale, jawSet: jaw ? jaw.name : null, pieces: scaled };
+  if (neckOn) result.coveredTops = ROLES.filter((r) => scaled[r].topDiameter < neck);
   if (errors.length) return result;
 
   // Rule 5: packing in integer micrometres.
@@ -198,7 +241,9 @@ export function plan(inputs, pieces, machine) {
       x = xStart + lengthsUm[k];
       return { role: ROLES[k], xStart: mm(xStart), xEnd: mm(x) };
     });
-    return { index: i + 1, pieces: placed, used: mm(pattern.used), leftover: mm(usableUm - pattern.used) };
+    const out = { index: i + 1, pieces: placed, used: mm(pattern.used), leftover: mm(usableUm - pattern.used) };
+    if (neckOn) out.smallestSection = smallestSection(placed, pieces, scale, neck);
+    return out;
   });
   result.summary = {
     blanksPerSide: best.length,

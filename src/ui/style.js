@@ -56,6 +56,9 @@ ${S} svg.csc-pv { width: 100%; height: auto; display: block; border-radius: 4px;
 ${S} .csc-pv-stock { fill: var(--color-surface); stroke: var(--color-text-secondary); stroke-width: 1; vector-effect: non-scaling-stroke; }
 ${S} .csc-pv-res { fill: color-mix(in srgb, var(--color-danger, #e74c3c) 22%, transparent); }
 ${S} .csc-pv-axis { stroke: var(--color-text-secondary); stroke-width: 1; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; }
+${S} .csc-pv-neck { fill: color-mix(in srgb, var(--color-text-secondary) 60%, transparent); }
+${S} .csc-downloads { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+${S} .csc-downloads button.csc-link { color: var(--color-accent); text-align: left; }
 ${S} .csc-pv-piece { fill: color-mix(in srgb, var(--color-accent) 55%, transparent); stroke: var(--color-accent); stroke-width: 1; vector-effect: non-scaling-stroke; }
 `;
 

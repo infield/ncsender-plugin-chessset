@@ -2,7 +2,7 @@
 
 Plans a turned chess set onto rotary blanks. You pick the queen's base diameter, your stock length and width, and the end allowances; the plugin scales a model package, checks that every piece fits your stock and chuck jaws, and packs the sixteen pieces of each side onto the fewest blanks.
 
-Status: 0.1.x, planning. The plugin sets up your machine, imports the model package and plans the blanks. Export of blank STL files for Rotary CAM comes in 0.2.
+Status: 0.1.x beta. The plugin sets up your machine, imports the model package, plans the blanks and exports one STL per blank. The files haven't been tested in Rotary CAM yet.
 
 The plugin never moves the machine: it doesn't load programs, start jobs or send commands.
 
@@ -40,9 +40,15 @@ Enter the queen's base diameter, the stock length, shape and width, the chuck an
 - blanks per side and the stock to buy;
 - one card per blank, with its pieces from chuck to tailstock, used and leftover length, the jaw set, and a to-scale side view.
 
-## Export and Download files (coming in 0.2)
+## Export and Download files
 
-Export will write one STL per blank, a setup file for Rotary CAM, a `layout.json` and the model licence into `chess set/<job name>/` in the File Manager. If a save to the File Manager fails, **Download files** will offer the same files as separate downloads.
+**Export to File Manager** writes the job into `chess set/<job name>/`: one STL per blank (light and dark), a `.rotary.json` setup file next to each, `layout.json` and the model licence. An earlier export is never overwritten; a second export of the same name goes to `<job name> (2)`.
+
+**Download files** lists the same files; each click downloads one.
+
+**Connecting necks** (under Allowances): on puts a thin rod (default 7.6 mm / 0.3 in) in each gap so the blank stays in one piece while it is cut; off leaves the gaps empty. This is a choice until the files have been tested in Rotary CAM.
+
+Files are ASCII STL in mm. X is the rotary axis, and the first piece's base is at X = 0. Export is unavailable while a job is running.
 
 ## Licence
 

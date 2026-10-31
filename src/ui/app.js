@@ -2,6 +2,7 @@
 // Package, the planning inputs, the live plan with its preview, and the
 // Machine section. Export (Phase 5) is not built yet.
 import { COUNTS_PER_SIDE, DEFAULT_MACHINE, ROLES } from '../config.js';
+import { REFUSE_RUNNING, REFUSE_WORKER, defaultJobName, downloadFiles, exportJob, validJobName } from '../exporter.js';
 import { createFm } from '../fm.js';
 import { importPackage } from '../package.js';
 import { plan } from '../planner.js';
@@ -40,7 +41,25 @@ export async function mountApp(root, host, engine) {
     setupDraft: null,
     machineDraft: null,
     machineOpen: false,
+    jobName: null, // null follows the default name
+    exporting: false,
+    exportStatus: '',
+    exportError: '',
+    downloadList: null, // [{name, download}] once Download files is opened
+    serverState: null,
   };
+  const pluginVersion = String(host.build || '').split('-')[0] || '0.0.0';
+
+  // The host posts {type:'server-state-update', state} into the window. A job
+  // is running when jobLoaded.status === 'running' (§12).
+  const onHostMessage = (event) => {
+    if (event?.data?.type !== 'server-state-update') return;
+    const was = jobRunning();
+    state.serverState = event.data.state || null;
+    if (jobRunning() !== was) updatePlan();
+  };
+  const jobRunning = () => state.serverState?.jobLoaded?.status === 'running';
+  window.addEventListener('message', onHostMessage);
 
   // ---- Settings -----------------------------------------------------------
   const saveSettings = (patch) =>
@@ -87,6 +106,7 @@ export async function mountApp(root, host, engine) {
   const stop = () => {
     watcher.disconnect();
     window.removeEventListener('settings-changed', onHostSettings);
+    window.removeEventListener('message', onHostMessage);
   };
   const watcher = new MutationObserver(() => {
     if (!root.isConnected) {
@@ -211,9 +231,10 @@ export async function mountApp(root, host, engine) {
 
   function inputField(field, label) {
     const f = lengthField({
-      label, mm: state.inputs[field], unit: state.unit, range: rangeHint(field, state.unit), name: field,
+      label, mm: state.inputs[field], unit: state.unit, range: rangeHint(field, state.unit, state.inputs), name: field,
       onInput: (mm) => {
         state.inputs[field] = mm;
+        resetExport();
         scheduleInputsSave();
         updatePlan();
       },
@@ -222,8 +243,15 @@ export async function mountApp(root, host, engine) {
     return f.el;
   }
 
+  function resetExport() {
+    state.downloadList = null;
+    state.exportStatus = '';
+    state.exportError = '';
+  }
+
   function pick(field, value) {
     state.inputs[field] = value;
+    resetExport();
     scheduleInputsSave();
     render();
   }
@@ -247,7 +275,13 @@ export async function mountApp(root, host, engine) {
         inputField('chuckRes', 'Chuck reservation'),
         inputField('tailRes', 'Tailstock reservation'),
         inputField('gap', 'Gap between pieces'),
-        inputField('radialAllowance', 'Radial allowance (per side)')),
+        inputField('radialAllowance', 'Radial allowance (per side)'),
+        h('div', { class: 'csc-field' }, h('label', { text: 'Connecting necks' }),
+          segmented('Connecting necks', [['on', 'On'], ['off', 'Off']], state.inputs.neckEnabled === false ? 'off' : 'on', (v) => pick('neckEnabled', v === 'on'), 'neck')),
+        state.inputs.neckEnabled === false
+          ? h('div', { class: 'csc-muted', text: 'Off: pieces are separate, with empty gaps. Your CAM must leave material between them.' })
+          : [inputField('neckDiameter', 'Neck diameter'),
+             h('div', { class: 'csc-muted', text: 'A rod in each gap keeps the blank in one piece while it is cut. Rotary CAM hasn\u2019t been tested yet, so this stays a choice for now.' })]),
       h('div', { class: 'csc-card', dataset: { section: 'sides' } },
         h('h3', { text: 'Sides' }),
         segmented('Sides', Object.entries(SIDE_LABEL), state.inputs.sides, (v) => pick('sides', v), 'sides')),
@@ -329,6 +363,100 @@ export async function mountApp(root, host, engine) {
       h('small', { class: 'csc-muted', text: `${s.totalBlanks} × ${fmtPair(inputs.stockLength, unit)[1]} = ${fmtPair(s.stockToBuy, unit)[1]}` })));
 
     for (const blank of result.blanks) planSlot.append(blankCard(blank, result, pkg, inputs, unit));
+    planSlot.append(exportSection(result, pkg));
+  }
+
+  // ---- Export ------------------------------------------------------------
+  function exportSection(result, pkg) {
+    const name = state.jobName ?? defaultJobName(pkg, state.inputs);
+    const nameError = validJobName(name);
+    const blocked = jobRunning() ? REFUSE_RUNNING : !engine.worker ? REFUSE_WORKER : null;
+    const input = h('input', { type: 'text', value: name, attrs: { name: 'jobName', 'aria-label': 'Job name', autocomplete: 'off' } });
+    const hint = h('div', { class: nameError ? 'csc-hint csc-bad' : 'csc-hint', text: nameError || 'Folder in the File Manager: chess set/<job name>/' });
+    const exportBtn = h('button', { type: 'button', class: 'csc-primary', text: 'Export to File Manager', dataset: { act: 'export' }, disabled: Boolean(blocked || nameError || state.exporting) });
+    const downloadBtn = h('button', { type: 'button', text: state.downloadList ? 'Hide download list' : 'Download files', dataset: { act: 'download' }, disabled: Boolean(blocked || nameError || state.exporting) });
+    const status = h('div', { class: 'csc-muted', dataset: { exportStatus: '' }, text: state.exportStatus });
+    input.addEventListener('input', () => {
+      state.jobName = input.value;
+      resetExport();
+      const err = validJobName(input.value);
+      hint.textContent = err || 'Folder in the File Manager: chess set/<job name>/';
+      hint.classList.toggle('csc-bad', Boolean(err));
+      exportBtn.disabled = downloadBtn.disabled = Boolean(blocked || err);
+    });
+    const job = () => ({
+      fm, call: engine.call, plan: result, pkg, key: state.settings.lastPackage, inputs: { ...state.inputs },
+      jobName: state.jobName ?? defaultJobName(pkg, state.inputs), pluginVersion, jobRunning: jobRunning(), workerAvailable: Boolean(engine.worker),
+    });
+    exportBtn.addEventListener('click', async () => {
+      state.exporting = true;
+      state.exportError = '';
+      state.exportStatus = 'Starting…';
+      updatePlan();
+      try {
+        const done = await exportJob({ ...job(), onProgress: (t) => { state.exportStatus = t; const el = planSlot.querySelector('[data-export-status]'); if (el) el.textContent = t; } });
+        state.exportStatus = `Exported ${done.files.length} files to chess set/${done.folder}/.`;
+      } catch (e) {
+        state.exportStatus = '';
+        state.exportError = e.path
+          ? `Saving ${e.path} failed: ${e.status || 'no connection'} ${e.body || ''}. Files already written stay in place; this folder has no layout.json, so it is incomplete. Use Download files below instead.`
+          : e.message || String(e);
+        if (e.path) await openDownloads();
+      }
+      state.exporting = false;
+      updatePlan();
+    });
+    downloadBtn.addEventListener('click', async () => {
+      if (state.downloadList) {
+        state.downloadList = null;
+        updatePlan();
+        return;
+      }
+      await openDownloads();
+      updatePlan();
+    });
+    async function openDownloads() {
+      try {
+        state.downloadList = await downloadFiles(job());
+      } catch (e) {
+        state.exportError = e.message || String(e);
+      }
+    }
+
+    const list = state.downloadList
+      ? h('ul', { class: 'csc-downloads', dataset: { downloadList: '' } }, state.downloadList.map((f) => {
+          const link = h('button', { type: 'button', class: 'csc-link', text: f.name, dataset: { file: f.name } });
+          link.addEventListener('click', async () => {
+            link.disabled = true;
+            link.textContent = `${f.name} (building…)`;
+            try {
+              const { name: fileName, text } = await f.download();
+              const url = URL.createObjectURL(new Blob([text], { type: fileName.endsWith('.json') ? 'application/json' : 'text/plain' }));
+              const a = h('a', { href: url, attrs: { download: fileName } });
+              document.body.append(a);
+              a.click();
+              a.remove();
+              setTimeout(() => URL.revokeObjectURL(url), 60000);
+              link.textContent = `${f.name} ✓`;
+            } catch (e) {
+              link.textContent = `${f.name} (failed: ${e.message || e})`;
+            }
+            link.disabled = false;
+          });
+          return h('li', {}, link);
+        }))
+      : null;
+
+    return h('div', { class: 'csc-card', dataset: { section: 'export' } },
+      h('h3', { text: 'Export' }),
+      h('div', { class: 'csc-field' }, h('label', { text: 'Job name' }), input, hint),
+      h('div', { class: 'csc-row' }, exportBtn, downloadBtn),
+      blocked ? h('div', { class: 'csc-banner', dataset: { exportBlocked: '' }, text: blocked }) : null,
+      status,
+      state.exportError ? h('div', { class: 'csc-errors', dataset: { exportError: '' }, text: state.exportError }) : null,
+      state.downloadList ? h('div', { class: 'csc-muted', text: 'One file per click. Each blank STL is built when you click it.' }) : null,
+      list,
+      h('div', { class: 'csc-muted', text: `One STL per blank${state.inputs.sides === 'both' ? ' per side' : ''} (ASCII, mm; X is the rotary axis, the first base at X = 0), a .rotary.json setup file next to each, layout.json and the model licence.` }));
   }
 
   // A length on two lines: the display unit, and the other unit below.
@@ -338,13 +466,19 @@ export async function mountApp(root, host, engine) {
   };
 
   function pieceTable(result, unit) {
+    const covered = result.coveredTops; // only with connecting necks on
     const rows = ROLES.map((role, i) => {
       const p = result.pieces[role];
       return h('tr', {}, h('td', { text: ROLE_NAME[role] }), h('td', { text: String(COUNTS_PER_SIDE[i]) }),
-        h('td', {}, two(p.axialLength, unit)), h('td', {}, two(p.baseDiameter, unit)), h('td', {}, two(p.sweptDiameter, unit)));
+        h('td', {}, two(p.axialLength, unit)), h('td', {}, two(p.baseDiameter, unit)), h('td', {}, two(p.sweptDiameter, unit)),
+        covered ? h('td', { text: covered.includes(role) ? 'covered' : '', dataset: { covered: covered.includes(role) ? role : '' } }) : null);
     });
+    const heads = ['Piece', 'Per side', 'Axial length', 'Base Ø', 'Swept Ø', ...(covered ? ['Top'] : [])];
     return h('div', { class: 'csc-card', dataset: { section: 'pieces' } },
-      h('table', {}, h('thead', {}, h('tr', {}, ['Piece', 'Per side', 'Axial length', 'Base Ø', 'Swept Ø'].map((t) => h('th', { text: t })))), h('tbody', {}, rows)));
+      h('table', {}, h('thead', {}, h('tr', {}, heads.map((t) => h('th', { text: t })))), h('tbody', {}, rows)),
+      covered && covered.length
+        ? h('div', { class: 'csc-muted', text: `Top covered by the neck: ${covered.map((x) => ROLE_NAME[x]).join(', ')}. The neck is wider than these tops, so they are finished by hand after parting.` })
+        : null);
   }
 
   function blankCard(blank, result, pkg, inputs, unit) {
@@ -357,14 +491,15 @@ export async function mountApp(root, host, engine) {
     return h('div', { class: 'csc-card', dataset: { blank: String(blank.index) } },
       h('h3', { text: title }),
       h('div', { class: 'csc-pieces', text: `Chuck → ${blank.pieces.map((p) => ROLE_NAME[p.role]).join(' · ')} → tailstock` }),
-      blankPreview({ blank, inputs, pieces: pkg.pieces, scale: result.scale }),
+      blankPreview({ blank, inputs, pieces: pkg.pieces, scale: result.scale, neck: inputs.neckEnabled === false ? null : inputs.neckDiameter }),
       h('div', { class: 'csc-kvs' },
         kv('Used', two(blank.used, unit)),
         kv('Leftover', two(blank.leftover, unit)),
         kv('Stock', h('span', { class: 'csc-two', dataset: { stock: '' } }, h('span', { text: `${lenA} × ${widA} ${inputs.stockShape}` }), h('small', { text: `${lenB} × ${widB}` }))),
         kv('Chuck reservation', two(inputs.chuckRes, unit)),
         kv('Tailstock reservation', two(inputs.tailRes, unit)),
-        kv('Jaw set', result.jawSet)));
+        kv('Jaw set', result.jawSet),
+        blank.smallestSection != null ? kv('Smallest section', two(blank.smallestSection, unit)) : null));
   }
 
   // ---- Render -------------------------------------------------------------

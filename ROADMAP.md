@@ -17,7 +17,7 @@ These come from spec, Detailed Implementation Plan, P3, which holds each phase's
 | 2 | Prepared Staunton package (`tools/prepare-package.mjs`) | Phase 1 |
 | 3 | Plugin shell, settings and package import | Phases 1–2 |
 | 4 | Planning UI and 2-D preview | Phase 3 |
-| 5 | Export (STL per blank, sidecar, `layout.json`) | Phases 0 and 4 |
+| 5 | Export (STL per blank, sidecar, `layout.json`). Built early in 0.1.7 with both support outcomes behind a switch, because Rotary CAM isn't released; Phase 0 still picks the outcome | Phases 0 and 4 |
 | 6 | Shop validation: cut one 12 in blank. This closes O-4 (neck and gap) and O-10 (holding-tab length) | Phase 5 |
 
 **Version rule** (plan D12): the plugin stays at `0.1.x` and moves to `0.2.0` once a 12 in blank has been cut end to end.
