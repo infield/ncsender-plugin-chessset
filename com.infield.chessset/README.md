@@ -12,7 +12,7 @@ The plugin never moves the machine: it doesn't load programs, start jobs or send
 2. In ncSender, open **Settings → Plugins** and install the ZIP.
 3. Open **Chess Set Creator** from the tool menu.
 
-Requires ncSender 2.0.88 or later (Pro 2.0.149 or later).
+Supported on the latest ncSender 2.x release (standard or Pro). For advanced hobbyists running a rotary axis, with Rotary CAM for toolpaths.
 
 ## First run: machine setup
 
@@ -42,7 +42,7 @@ Enter the queen's base diameter, the stock length, shape and width, the chuck an
 
 ## Export and Download files (coming in 0.2)
 
-Export will write one STL per blank, a setup file for Rotary CAM, a `layout.json` and the model licence into `chess set/<job name>/` in the File Manager. **Download files** will offer the same files as separate downloads, for other CAM programs.
+Export will write one STL per blank, a setup file for Rotary CAM, a `layout.json` and the model licence into `chess set/<job name>/` in the File Manager. If a save to the File Manager fails, **Download files** will offer the same files as separate downloads.
 
 ## Licence
 

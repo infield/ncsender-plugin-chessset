@@ -8,7 +8,7 @@ This page is an index. The requirements live in the spec, [`docs/designs/egm/che
 |---|---|---|
 | Problem statement | Spec §1 | Laying 32 pieces out across turning blanks by hand in CAD, and redoing it whenever the size or stock changes |
 | Goals and non-goals (v1) | Spec §2 | Six goals, all tagged [C]. Non-goals include G-code generation, machine motion, automatic shrinking, weight pockets and promotion queens |
-| Users | Spec §4 | "One user: Marc, on ncSender 2.x Pro … working at the shop machine." Rev 8 §4 now records the audience decision and treats the owner's shop as the first user and test site. Who the users are is still open (DISC-1). |
+| Users | Spec §4 | "One user: Marc, on ncSender 2.x Pro … working at the shop machine." §4 now names them: advanced hobbyists who run ncSender with a rotary axis (DISC-1, decided 2026-10-30), with the owner's shop as the first user and test site. |
 | Requirements | Spec §5.1–§5.11 | Each item is tagged [C] confirmed, [P] proposed, [O-n] open, or [v2] |
 | Acceptance criteria | Spec §9 | AC-PKG, AC-SEC, AC-IN, AC-SIZE, AC-FIT, AC-PLAN, AC-UI, AC-EXP |
 | Open questions | Spec §13 | O-1 … O-13 |
@@ -41,6 +41,6 @@ The spec still describes one user and one shop. Eight conflicts are logged for o
 - DISC-7: depending on unreleased Rotary CAM
 - DISC-8: licence and release channel
 
-DISC-2, 3, 4, 6 and 8 were decided on 2026-10-30 and are written into spec Revision 8. DISC-1, 5 and 7 are still open.
+All eight are decided. DISC-2, 3, 4, 6 and 8 were written into spec Revision 8. DISC-1, 5 and 7 were decided on 2026-10-30 without separate discovery: advanced-hobbyist ncSender rotary users, the latest ncSender 2.x only, and Rotary CAM in ncSender only.
 
-Product discovery is now worth doing. The aim is to define who these users are, which machines, rotary units and ncSender versions they run, and what they use for rotary CAM. DISC-1, DISC-5 and DISC-7 depend on that research.
+Further discovery (which machines and rotary units these users run) can still inform defaults, but no open decision waits on it.

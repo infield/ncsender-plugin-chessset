@@ -39,10 +39,10 @@ This log holds decisions made by the owner, Marc Infield. The October 30, 2026 e
 | 2026-10-30 | **Units follow ncSender.** All measurements are stored, computed and exported in mm. The dialog shows lengths in ncSender's units setting (`unitsPreference`), with the other unit on a line below; the plugin's own in/mm toggle is removed. | Spec §5.1, AC-IN-02, P4.1, P4.7, P4.10, P4.12, P5.8, §12 |
 | 2026-10-30 | **Model packages come from a general chess-set library**, `infield/chessset-library` (renamed from `chessset-staunton-package`): one package per set style under `sets/<id>/`, each with its own licence and its own releases (`<id>-v<version>`). Staunton is the only set for now. | Spec §5.6, §5.9, D14, §10, P3 |
 | 2026-10-30 | **Stay in beta.** The Staunton set is version 0.1.0, not 1.0.0. Model packages start at 0.1.0 and reach 1.0.0 only with owner approval after shop validation; the plugin stays below 1.0. Releases are titled "beta" but are not GitHub pre-releases, so ncSender's update check still finds them. | Spec D12, §5.6 example, §10 |
+| 2026-10-30 | **DISC-1, DISC-5, DISC-7 decided.** Users: advanced-hobbyist ncSender rotary users. Versions: the latest ncSender 2.x only (no 0.3.x; O-9 closed). CAM: Rotary CAM in ncSender only; Download files is a save-failure fallback, not a route to other CAM programs. | [`discrepancies.md`](discrepancies.md); spec §4, §5.8, §6, §7, R12, AC-EXP-09, D13, §13 |
 
 ## Pending
 
 | Decision | Where it is described |
 |---|---|
-| DISC-1 (target users), DISC-5 (ncSender versions), DISC-7 (Rotary CAM only, or other CAM too): these need discovery first | [`discrepancies.md`](discrepancies.md) |
-| Owner-held open questions O-6, O-7, O-9, O-11, O-12 | Spec §13 |
+| Owner-held open questions O-6, O-7, O-11, O-12 | Spec §13 |

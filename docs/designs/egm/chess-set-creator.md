@@ -88,7 +88,7 @@ Any change to piece size or stock length means redoing all of it. Chess Set Crea
 
 ## 4. Users and flow
 
-The owner has decided that the plugin is for other ncSender rotary users, not only his own shop. Who those users are is still open: DISC-1 in `docs/product/decisions/discrepancies.md`, pending product discovery. Until that is decided, this section describes the first user and test site: Marc, on ncSender 2.x Pro (v2.0.271 on October 30, 2026), with a Sienci AltMill, a SuperLongBoard-EXT (grblHAL), and a Vortex rotary on A.
+**Users** [C] (owner, 2026-10-30; DISC-1): advanced hobbyists who run ncSender with a rotary axis. They are comfortable with CAD/CAM, workholding and rotary setup, and use Rotary CAM inside ncSender. The plugin is not only for the owner's shop. The first user and test site is Marc, on ncSender 2.x Pro (v2.0.271 on October 30, 2026), with a Sienci AltMill, a SuperLongBoard-EXT (grblHAL), and a Vortex rotary on A.
 
 1. Open **Chess Set Creator** from the tool menu. On the first open, confirm or edit the machine settings (§5.1).
 2. Pick an installed model package. With none installed, download a set's package ZIP from the chess-set library (§5.9), unzip it, and import the folder.
@@ -326,7 +326,7 @@ v1 keeps the last job's inputs in settings, so the dialog reopens with them. [P]
 - **Download files** [C] (A2): the plugin can offer the export as separate browser downloads: each blank STL, its sidecar, `layout.json` and `LICENSE-models.txt`.
   - The files are listed as links. Each click builds and downloads one file; nothing downloads without a click. [P]
   - It is offered after a failed save, and any files already saved stay in place.
-  - It is also always available as a secondary action, so users of other CAM programs can get the files (DISC-7). [P]
+  - It is not offered as an everyday route to other CAM programs: v1 supports Rotary CAM in ncSender only (DISC-7, owner 2026-10-30). If Phase 0 finds that Rotary CAM can't open files from the File Manager (O-1), Download files becomes the route into Rotary CAM's "Open STL…" and is then shown at all times. [P]
   - There is no ZIP.
 - Export is allowed only when the plan has no errors. [P]
 
@@ -492,7 +492,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
 - **Displayed text** from manifests and job names is set with `textContent`, never `innerHTML`.
 - **Preview:** a 2-D SVG side view of each blank, drawn to scale, showing the stock outline, reservations, piece silhouettes and (outcome B) connecting necks. A 3-D view is [v2].
 - **Manifest permissions:** `["gcode.modify"]`, for consistency with ncCAM and AAxis. ncSender doesn't read this field (§12).
-- **Platforms:** ncSender 2.x, both editions (`v2` and `pro-v2`). Supporting 0.3.x is [O-9], and is tied to DISC-5.
+- **Platforms** [C] (owner, 2026-10-30; DISC-5): the latest ncSender 2.x release, both editions (`v2` and `pro-v2`). The plugin is developed and tested against the current release only, and older releases aren't supported. 0.3.x is not supported (closes O-9). The manifest's minimum versions (D13) stay at the oldest the code is known to work with, so an older install isn't blocked, just unsupported.
 - **Testing:**
   - Pure modules get unit tests built from the worked examples in §11.
   - The dialog is checked headlessly against a mock ncSender. The mock, the harness and the check script are committed under `tools/`.
@@ -513,7 +513,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
 | Blank connectivity | **Pending O-2.** Outcome A (Rotary CAM leaves the support) if Phase 0 shows it; otherwise B (connecting necks in the STL). Only the selected outcome is built. [C] | Under B, *separate bodies with empty gaps* are rejected because roughing would cut through the gaps toward the axis and part the blank mid-job. Under A, *necks in the STL* are rejected as unnecessary geometry. |
 | Connecting-neck joins (outcome B) | Overlapping shells [P] | *Boolean union*: needs a mesh kernel such as manifold-3d wasm (about 1 MB) for every blank. Revisit if Phase 0 shows that Rotary CAM rejects overlapping shells. |
 | Handoff | Folder in the File Manager [C] | *The plugin generates G-code itself*: duplicates Rotary CAM. |
-| Export fallback | Per-file browser downloads [C] | *ZIP download*: adds a library (fflate) and a streaming sequence for a save-failure fallback. *Error and retry only*: leaves no route for users of other CAM programs. |
+| Export fallback | Per-file browser downloads [C] | *ZIP download*: adds a library (fflate) and a streaming sequence for a save-failure fallback. *Error and retry only*: leaves no way to get the files when a File Manager save fails. |
 | STL encoding (exports) | ASCII [P] | *Binary*: the save endpoint is text-only. *Base64 binary*: Rotary CAM would need a custom decoder. |
 | Packing | Exact search [P] | *First-fit decreasing*: not guaranteed to find the minimum; exact search over at most 972 states is fast enough. |
 | Preview | 2-D SVG [P] | *three.js 3-D*: adds a 3-D library dependency, and the layout question is one-dimensional. |
@@ -533,7 +533,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
 | R9 | An export overwrites earlier work. | Data loss. | Free-folder check before saving (§5.8), and `layout.json` written last marks a complete job. Two clients exporting the same job name at the same moment could still collide; this is accepted. | Mitigated |
 | R10 | Chuck or tailstock collision, from a reservation that doesn't match the holding tab Rotary CAM makes, or a value mistyped into Rotary CAM. | The cutter or spindle strikes the chuck jaws or the tailstock centre. | Rotary CAM places the part and manages the holding tabs. If Rotary CAM adopts the §5.11 sidecar, nothing is retyped. The per-blank card shows stock and reservations in mm and inches. Reservations are checked against Rotary CAM's tab length on the 12 in test blank [O-4, O-10]. The user runs Rotary CAM's simulation and checks clearance before every first cut. | Partly mitigated |
 | R11 | An untrusted package injects paths or script, through `version`, file paths or manifest text. | Overwritten G-code programs; script running with access to ncSender's API. | Semver and path rules (§5.6), job-name rules (§5.8), `textContent` for displayed text (§6), and the server's rejection of paths that escape its storage folder (§12). | Mitigated |
-| R12 | Other users can't use the export until Rotary CAM is released, and Rotary CAM's release date is outside this project's control. | A public release is useful for planning only, until Rotary CAM ships. | The planning milestone stands on its own (plan P3). Download files serves other CAM programs. Whether to support other CAM programs is DISC-7. | Open |
+| R12 | Other users can't use the export until Rotary CAM is released, and Rotary CAM's release date is outside this project's control. | A public release is useful for planning only, until Rotary CAM ships. | The planning milestone stands on its own (plan P3). v1 supports Rotary CAM only (DISC-7, decided 2026-10-30): other CAM programs are not a target. | Open |
 | R13 | The dialog runs in ncSender's main window, on every connected client (§6). | Heavy page work could stall the machine-control UI during a job. Clients can overwrite each other's settings. | STL work runs in a Worker. Export never falls back to the page, and is blocked while a job runs. Settings saves merge before writing; the last save wins (accepted, §5.7). | Mitigated |
 | R14 | Download files can mean up to 22 downloads (both sides, 12 in stock). | Browsers may block repeated automatic downloads; the desktop app may ask where to save each file. | One click per file, and never automatic (§5.8). Phase 0 checks downloads in the desktop app and in a browser. | Open |
 
@@ -570,7 +570,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
 | AC-EXP-06 | Outcome B only: the plan lists the pieces whose top is covered by the connecting neck, and each blank's smallest section. | §5.3, §5.5 |
 | AC-EXP-07 | A forced save failure offers Download files, and the incomplete folder has no `layout.json`. | §5.8 |
 | AC-EXP-08 | Every blank STL has a `.rotary.json` sidecar with the same base name. It matches §5.11, and its stock and placement equal the plan's per-blank card. | §5.11 |
-| AC-EXP-09 | **Download files** lists one link per file, is always available as a secondary action, and never downloads without a click. | §5.8 |
+| AC-EXP-09 | **Download files** lists one link per file, is offered after a failed save (and at all times only if O-1 requires it), and never downloads without a click. | §5.8 |
 | AC-REL-01 | The plugin ZIP installs from its GitHub release URL, and its manifest has the `repository` field. | §5.9 |
 
 ## 10. Prepared reference package (v1 deliverable)
@@ -671,7 +671,7 @@ All from ncSender source at commit `2f8a659`, checked October 30, 2026:
 | O-4 | The right connecting-neck diameter, gap and finishing-cutter diameter, and the smallest safe section diameter (§5.3). Should pieces with thin tops go at the tailstock end, or be flipped? Settled by cutting one 12 in test blank [C]. | Marc (12 in test blank) | 7.6 mm connecting neck, 10 mm gap, 6.35 mm cutter, all bases toward the chuck; no section threshold |
 | O-6 | Is manual piece-by-piece blank selection wanted? | Marc | No (v1 is full-side automatic) |
 | O-7 | Should ncSender block loading non-G-code files from the File Manager? | Marc → ncSender | Request it |
-| O-9 | Support ncSender 0.3.x? Tied to DISC-5. | Marc | No |
+| O-9 | Support ncSender 0.3.x? Tied to DISC-5. | Marc | **Closed 2026-10-30: no.** The latest 2.x only (DISC-5). |
 | O-10 | How long are Rotary CAM's holding tab and parting neck at each end, so the reservation defaults match? The owner understands that Rotary CAM places the part and makes the tabs; this needs confirming. | Rotary CAM author; Marc (12 in test blank) | Reservations 25.4 mm (chuck) and 19.05 mm (tailstock), entered by hand |
 | O-11 | Are per-piece size overrides needed? | Marc | No |
 | O-12 | Do chucks grip square stock across the flats, with the same range as round stock? | Marc | Yes: the side width is compared with the range |
@@ -685,7 +685,7 @@ All from ncSender source at commit `2f8a659`, checked October 30, 2026:
 | O-5 | Rev 3 | The default queen base diameter is the [P] value in §5.1. |
 | O-8 | Rev 8 | `permissions` is not read by ncSender (§12). It is kept as `["gcode.modify"]` for consistency. |
 
-The audience questions DISC-1, DISC-5 and DISC-7 are tracked in `docs/product/decisions/discrepancies.md`.
+The audience questions DISC-1, DISC-5 and DISC-7 were decided by the owner on 2026-10-30 (`docs/product/decisions/discrepancies.md`): advanced-hobbyist ncSender rotary users; the latest ncSender 2.x; Rotary CAM in ncSender only.
 
 ## 14. Test files
 
@@ -768,7 +768,7 @@ One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as A
 | D10 | Tests | `node --test tests/*.test.js`, on Node 22 (pinned to 22.22.0 in `.nvmrc`; `engines` ≥ 22). | Same test runner as ncCAM. Node 22 matches the Node bundled in the ncSender 2.0.27x desktop app (Electron 38; owner-reported 22.22.0). |
 | D11 | Plugin licence | GPL-3.0. [C] (DISC-8) `LICENSE` holds the full GPL text. | Matches AAxis and ncCAM. The owner briefly chose a dual GPL/commercial licence on 2026-10-30, then returned to GPL-3.0 only the same day. |
 | D12 | Versioning | The manifest starts at `0.1.0`. `build.sh` bumps the patch number unless given `--no-bump`. The first build uses `--no-bump` and ships 0.1.0. The planning milestone ships as 0.1.x. After the 12 in test blank is cut, set `0.2.0` by hand and build with `--no-bump`. Every build needs a CHANGELOG entry. **Beta:** the plugin stays below 1.0 and its releases are titled "beta", as AAxis does. Model packages also start at `0.1.0` (beta) and reach `1.0.0` only with owner approval, after a set has been cut and checked in the shop. Beta releases are normal GitHub releases, not pre-releases, because ncSender's update check and the `releases/latest` links skip pre-releases. | AAxis `CLAUDE.md` item 5. Publishing 0.1.x publicly departs from AAxis's "1.0.0 when shared publicly"; the owner chose public releases from M1 (DISC-8). |
-| D13 | Host version floor and updates | `minAppVersion "2.0.88"`, `platforms {"v2":"2.0.88","pro-v2":"2.0.149"}`. `repository: "https://github.com/infield/ncsender-plugin-chessset"`, so ncSender's update check finds releases. | ncCAM's version values. DISC-5 may change the platforms. DISC-8 for the repository. |
+| D13 | Host version floor and updates | `minAppVersion "2.0.88"`, `platforms {"v2":"2.0.88","pro-v2":"2.0.149"}`. `repository: "https://github.com/infield/ncsender-plugin-chessset"`, so ncSender's update check finds releases. | ncCAM's version values. DISC-5 (decided): only the latest ncSender 2.x is supported; these floors are not raised with each ncSender release. DISC-8 for the repository. |
 | D14 | Releases | **Plugin:** tag `v<version>`, then a GitHub release with `com.infield.chessset-<version>.zip` attached (the AAxis flow). **Model packages:** tag `<id>-v<version>` in the chess-set library, `infield/chessset-library`, with `<id>-<version>.zip` (holding the package folder) attached; each set is released on its own [P]. Creating either repository needs owner approval (given at M1, 2026-10-30). | §5.9 |
 
 **Detail 1 — the Worker (D2).** The same bundle, `lib/app.js`, runs in two places:
@@ -1191,7 +1191,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
     - the jaw set
     - under outcome B, the smallest section
     - the preview
-  - the export area: the job-name field, **Export to File Manager**, **Download files** (a secondary button that opens the list of links), and a progress line. Both actions are disabled, with the §5.10 message, while a job is running or when no Worker is available.
+  - the export area: the job-name field, **Export to File Manager**, **Download files** (shown after a failed save, or at all times if O-1 requires it; it opens the list of links), and a progress line. Both actions are disabled, with the §5.10 message, while a job is running or when no Worker is available.
 - **Preview:** an SVG with `viewBox="0 0 <stockLength> <stockWidth>"`. It holds:
   - the stock rectangle
   - the reservation areas

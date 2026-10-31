@@ -33,6 +33,6 @@ Everything else (`PRODUCT.md`, `ROADMAP.md`, `README.md`, the `docs/**/README.md
 
 ## Feature status
 
-The status of each feature, with its spec sections, acceptance criteria, plan phase and open findings, is kept in one place: [`docs/product/requirements/feature-index.md`](docs/product/requirements/feature-index.md). No feature is in implementation, ready for validation, or complete.
+The status of each feature, with its spec sections, acceptance criteria, plan phase and open findings, is kept in one place: [`docs/product/requirements/feature-index.md`](docs/product/requirements/feature-index.md). M1 (planning) is built and released as 0.1.x beta; its features are ready for validation. M2 (export) waits on the Phase 0 Rotary CAM test.
 
-**Audience (decided 2026-10-30): other ncSender rotary users.** Discovery is now active work. The shop-specific conflicts are in `docs/product/decisions/discrepancies.md` (DISC-1 … DISC-8).
+**Audience (decided 2026-10-30): advanced-hobbyist ncSender rotary users**, on the latest ncSender 2.x, using Rotary CAM (DISC-1, 5, 7). The shop-specific conflicts are in `docs/product/decisions/discrepancies.md` (DISC-1 … DISC-8).
