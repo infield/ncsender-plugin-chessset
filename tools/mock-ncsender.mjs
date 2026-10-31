@@ -113,6 +113,17 @@ export function startMock({ port = 8777, quiet = false, units = 'metric' } = {})
       return send(res, 200, { success: true });
     }
 
+    // Recursive, and OK when the folder is missing, as in ncSender (§12).
+    if (p === '/api/gcode-files/folders/delete' && m === 'POST') {
+      const body = JSON.parse((await readBody(req)) || '{}');
+      if (typeof body.path !== 'string') return send(res, 400, 'Path is required', 'text/plain');
+      if (body.path.includes('..')) return send(res, 500, { error: 'Invalid path' });
+      const prefix = `${body.path.replace(/\/+$/, '')}/`;
+      let n = 0;
+      for (const k of [...store.keys()]) if (k.startsWith(prefix)) { store.delete(k); n++; }
+      note(`  deleted ${prefix} (${n} files)`);
+      return send(res, 200, { success: true });
+    }
     if (p === '/__mock/fail-save' && m === 'POST') {
       failAfter = Number(JSON.parse((await readBody(req)) || '{}').after) || 0;
       return send(res, 200, { failAfter });

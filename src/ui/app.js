@@ -4,7 +4,7 @@
 import { COUNTS_PER_SIDE, DEFAULT_MACHINE, ROLES } from '../config.js';
 import { REFUSE_RUNNING, REFUSE_WORKER, defaultJobName, downloadFiles, exportJob, validJobName } from '../exporter.js';
 import { createFm } from '../fm.js';
-import { importPackage } from '../package.js';
+import { importPackage, removePackage } from '../package.js';
 import { fetchLibrary, fetchSetFiles } from '../library.js';
 import { plan } from '../planner.js';
 import { load, save } from '../settings.js';
@@ -41,6 +41,7 @@ export async function mountApp(root, host, engine) {
     importProgress: '',
     importErrors: [],
     importDone: '',
+    confirmRemove: null, // the key of the set awaiting Remove confirmation
     setupDraft: null,
     machineDraft: null,
     machineOpen: false,
@@ -190,11 +191,15 @@ export async function mountApp(root, host, engine) {
     const folder = h('button', { type: 'button', text: 'Import package folder', disabled: state.importing,
       dataset: { act: 'import' }, onclick: () => input.click() });
 
+    const busy = state.importing || state.exporting;
     const line = pkg
-      ? h('div', { class: 'csc-col', attrs: { style: 'gap:2px' } },
-          h('div', { class: 'csc-pkg-name', dataset: { pkg: 'name' }, text: pkg.name }),
-          h('div', { class: 'csc-muted', text: `Version ${pkg.version} · ${pkg.author}` }),
-          h('div', { class: 'csc-muted', text: `${pkg.license} · ${pkg.attribution}` }))
+      ? h('div', { class: 'csc-row', attrs: { style: 'align-items:flex-start' } },
+          h('div', { class: 'csc-col', attrs: { style: 'gap:2px; flex:1; min-width:0' } },
+            h('div', { class: 'csc-pkg-name', dataset: { pkg: 'name' }, text: pkg.name }),
+            h('div', { class: 'csc-muted', text: `Version ${pkg.version} · ${pkg.author}` }),
+            h('div', { class: 'csc-muted', text: `${pkg.license} · ${pkg.attribution}` })),
+          h('button', { type: 'button', text: 'Remove', disabled: busy, dataset: { removeSet: state.settings.lastPackage },
+            onclick: () => askRemove(state.settings.lastPackage) }))
       : h('div', { class: 'csc-muted', text: 'No chess set installed. Browse the library and install one, or import a package folder.' });
 
     // Switch between installed sets.
@@ -204,8 +209,11 @@ export async function mountApp(root, host, engine) {
           keys.map((k) => {
             const p = state.settings.packages[k];
             const active = k === state.settings.lastPackage;
-            return h('button', { type: 'button', class: active ? 'csc-set csc-on' : 'csc-set', disabled: active || state.importing, dataset: { useSet: k },
-              text: `${p.name} ${p.version}${active ? ' (in use)' : ''}`, onclick: () => useSet(k) });
+            return h('div', { class: 'csc-row', attrs: { style: 'gap:4px' } },
+              h('button', { type: 'button', class: active ? 'csc-set csc-on' : 'csc-set', disabled: active || state.importing, dataset: { useSet: k },
+                text: `${p.name} ${p.version}${active ? ' (in use)' : ''}`, onclick: () => useSet(k) }),
+              active ? null : h('button', { type: 'button', class: 'csc-link', text: '✕', disabled: busy, dataset: { removeSet: k },
+                attrs: { 'aria-label': `Remove ${p.name} ${p.version}`, title: 'Remove' }, onclick: () => askRemove(k) }));
           }))
       : null;
 
@@ -213,10 +221,20 @@ export async function mountApp(root, host, engine) {
       ? h('ul', { class: 'csc-errors', dataset: { importErrors: '' } }, state.importErrors.map((e) => h('li', { text: e })))
       : null;
 
+    const toRemove = state.settings.packages[state.confirmRemove];
+    const confirmBox = toRemove
+      ? h('div', { class: 'csc-confirm', dataset: { confirmRemove: state.confirmRemove }, attrs: { role: 'alertdialog', 'aria-label': 'Remove set' } },
+          h('div', { text: `Remove ${toRemove.name} ${toRemove.version}? Its files are deleted from ncSender. You can install it again from the library or its package folder.` }),
+          h('div', { class: 'csc-row' },
+            h('button', { type: 'button', class: 'csc-danger', text: 'Remove', disabled: busy, dataset: { act: 'confirm-remove' }, onclick: () => runRemove(state.confirmRemove) }),
+            h('button', { type: 'button', text: 'Cancel', dataset: { act: 'cancel-remove' }, onclick: () => { state.confirmRemove = null; render(); } })))
+      : null;
+
     return h('div', { class: 'csc-card', dataset: { section: 'package' } },
       h('h3', { text: 'Chess set' }),
       line,
       switcher,
+      confirmBox,
       h('div', { class: 'csc-row' }, browse, folder, input),
       libraryList(),
       state.importProgress ? h('div', { class: 'csc-muted', dataset: { importProgress: '' }, text: state.importProgress }) : null,
@@ -257,6 +275,29 @@ export async function mountApp(root, host, engine) {
     } catch (e) {
       state.library = { error: e.message || String(e) };
     }
+    render();
+  }
+
+  function askRemove(key) {
+    state.confirmRemove = key;
+    state.importDone = '';
+    state.importErrors = [];
+    render();
+  }
+
+  async function runRemove(key) {
+    state.confirmRemove = null;
+    state.importing = true;
+    state.importProgress = 'Removing the set…';
+    render();
+    const result = await removePackage({ fm, saveSettings, key });
+    state.importing = false;
+    state.importProgress = '';
+    if (result.ok) {
+      resetExport();
+      state.importDone = `Removed ${result.name}.`;
+      if (result.warning) state.importErrors = [result.warning];
+    } else state.importErrors = [result.error];
     render();
   }
 

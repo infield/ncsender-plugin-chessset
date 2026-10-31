@@ -250,6 +250,34 @@ try {
     expect(last === 'staunton-clarkerubber@0.1.0', `stored lastPackage ${last}`);
   });
 
+  const storeNow = async () => (await (await fetch(mock.url + '__mock/store')).json());
+  const waitStored = async (cond, what) => {
+    for (let i = 0; i < 50; i++) {
+      if (cond(await storeNow())) return;
+      await page.waitForTimeout(100);
+    }
+    throw new Error(`not stored: ${what}`);
+  };
+
+  await step('8c. remove a set that is not in use: Cancel keeps it, Remove deletes its folder', async () => {
+    const other = 'staunton-clarkerubber@9.9.9';
+    await page.click(`[data-remove-set="${other}"]`);
+    await page.waitForSelector(`[data-confirm-remove="${other}"]`);
+    await page.click('[data-act="cancel-remove"]');
+    await page.waitForSelector('[data-confirm-remove]', { state: 'detached' });
+    expect(Object.keys((await storeNow()).files).some((f) => f.includes(`/${other}/`)), 'Cancel deleted files');
+    await page.click(`[data-remove-set="${other}"]`);
+    await page.click('[data-act="confirm-remove"]');
+    await page.waitForSelector('[data-section="package"] .csc-ok');
+    expect((await text('[data-section="package"] .csc-ok')) === 'Removed <script>x</script> 9.9.9.', await text('[data-section="package"] .csc-ok'));
+    await waitStored((st) => !st.settings.packages[other] && st.settings.lastPackage === 'staunton-clarkerubber@0.1.0', 'settings without 9.9.9');
+    const files = Object.keys((await storeNow()).files);
+    expect(!files.some((f) => f.includes(`/${other}/`)), `9.9.9 files left: ${files.join(', ')}`);
+    expect(files.filter((f) => f.includes('/staunton-clarkerubber@0.1.0/')).length === 8, 'Staunton files touched');
+    expect((await text('[data-pkg="name"]')) === 'Staunton (clarkerubber)', 'Staunton no longer in use');
+    expect((await page.locator('[data-use-set]').count()) === 0, 'set switcher still shown with one set');
+  });
+
   if (until !== 'import' && until !== 'plan') {
     const store = async () => (await (await fetch(mock.url + '__mock/store')).json()).files;
     const inFolder = (files, folder) => Object.keys(files).filter((f) => f.startsWith(`chess set/${folder}/`)).map((f) => f.slice(`chess set/${folder}/`.length));
@@ -305,6 +333,18 @@ try {
       await page.waitForSelector('[data-export-blocked]', { state: 'detached' });
     });
   }
+
+  await step('12b. removing the last set, the one in use, leaves no set installed', async () => {
+    await page.click('[data-remove-set="staunton-clarkerubber@0.1.0"]');
+    await page.click('[data-act="confirm-remove"]');
+    await page.waitForSelector('[data-section="package"] .csc-ok');
+    expect((await text('[data-section="package"] .csc-ok')) === 'Removed Staunton (clarkerubber) 0.1.0.', await text('[data-section="package"] .csc-ok'));
+    expect((await page.locator('[data-pkg="name"]').count()) === 0, 'a set is still shown');
+    expect((await page.locator('[data-blank]').count()) === 0, 'blank cards shown with no set');
+    await waitStored((st) => Object.keys(st.settings.packages).length === 0 && st.settings.lastPackage === null, 'no packages, lastPackage null');
+    const left = Object.keys((await storeNow()).files).filter((f) => f.startsWith('.chess-set-creator/'));
+    expect(left.length === 0, left.join(', '));
+  });
 
   await step('12. no forbidden calls in the mock log', async () => {
     const bad = mock.log.filter((l) => l.startsWith('FORBIDDEN'));

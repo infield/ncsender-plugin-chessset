@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { importPackage, loadPackageMeshes } from '../src/package.js';
+import { importPackage, loadPackageMeshes, removePackage } from '../src/package.js';
 import { createHandlers } from '../src/worker.js';
 import { ROLES } from '../src/config.js';
 import { APPENDIX_B, BAD_DIR, PACKAGE_DIR } from './helpers/data.js';
@@ -114,3 +114,64 @@ for (const [name, pattern] of [
     assert.deepEqual(fm.saves, []);
   });
 }
+
+// removePackage (owner request, 2026-10-31): settings first, then the folder.
+function settingsStub(initial) {
+  let current = structuredClone(initial);
+  const saveSettings = async (patch) => {
+    const change = typeof patch === 'function' ? patch(current) : patch;
+    current = { ...current, ...change };
+    return current;
+  };
+  return { saveSettings, get: () => current };
+}
+const rec = (id, version) => ({ id, version, name: `Set ${id}`, dir: `.chess-set-creator/sets/${id}@${version}` });
+
+test('removing the set in use drops it, picks the next set and deletes only its folder', async () => {
+  const s = settingsStub({ packages: { 'a@1.0.0': rec('a', '1.0.0'), 'b@0.1.0': rec('b', '0.1.0') }, lastPackage: 'a@1.0.0' });
+  const deleted = [];
+  const fm = { async deleteFolder(p) { deleted.push(p); } };
+  const r = await removePackage({ fm, saveSettings: s.saveSettings, key: 'a@1.0.0' });
+  assert.deepEqual(r, { ok: true, name: 'Set a 1.0.0' });
+  assert.deepEqual(Object.keys(s.get().packages), ['b@0.1.0']);
+  assert.equal(s.get().lastPackage, 'b@0.1.0');
+  assert.deepEqual(deleted, ['.chess-set-creator/sets/a@1.0.0']);
+});
+
+test('removing a set not in use keeps the set in use; removing the last leaves none', async () => {
+  const s = settingsStub({ packages: { 'a@1.0.0': rec('a', '1.0.0'), 'b@0.1.0': rec('b', '0.1.0') }, lastPackage: 'a@1.0.0' });
+  const fm = { async deleteFolder() {} };
+  await removePackage({ fm, saveSettings: s.saveSettings, key: 'b@0.1.0' });
+  assert.equal(s.get().lastPackage, 'a@1.0.0');
+  await removePackage({ fm, saveSettings: s.saveSettings, key: 'a@1.0.0' });
+  assert.deepEqual(s.get().packages, {});
+  assert.equal(s.get().lastPackage, null);
+});
+
+test('the folder deleted comes from the key, never from a stored dir', async () => {
+  const bad = { ...rec('a', '1.0.0'), dir: 'chess set' };
+  const s = settingsStub({ packages: { 'a@1.0.0': bad, '../x': bad }, lastPackage: 'a@1.0.0' });
+  const deleted = [];
+  const fm = { async deleteFolder(p) { deleted.push(p); } };
+  await removePackage({ fm, saveSettings: s.saveSettings, key: 'a@1.0.0' });
+  await removePackage({ fm, saveSettings: s.saveSettings, key: '../x' });
+  assert.deepEqual(deleted, ['.chess-set-creator/sets/a@1.0.0']);
+  assert.deepEqual(s.get().packages, {});
+});
+
+test('a settings failure keeps the set and deletes nothing; a delete failure is a warning', async () => {
+  const deleted = [];
+  const fm = { async deleteFolder(p) { deleted.push(p); } };
+  const failing = async () => { throw Object.assign(new Error('x'), { status: 503 }); };
+  const r1 = await removePackage({ fm, saveSettings: failing, key: 'a@1.0.0' });
+  assert.equal(r1.ok, false);
+  assert.match(r1.error, /\(503\)\. The set is still installed\./);
+  assert.deepEqual(deleted, []);
+
+  const s = settingsStub({ packages: { 'a@1.0.0': rec('a', '1.0.0') }, lastPackage: 'a@1.0.0' });
+  const fmFail = { async deleteFolder() { throw Object.assign(new Error('x'), { status: 500 }); } };
+  const r2 = await removePackage({ fm: fmFail, saveSettings: s.saveSettings, key: 'a@1.0.0' });
+  assert.equal(r2.ok, true);
+  assert.match(r2.warning, /deleting its files failed \(500\)\. They stay in \.chess-set-creator\/sets\/a@1\.0\.0/);
+  assert.deepEqual(s.get().packages, {});
+});

@@ -2,7 +2,7 @@
 
 Owner: Marc Infield · Revision 9 · October 30, 2026 · Status: implemented as the public beta 0.1.x (planning, the chess-set library and export); export not yet tested in Rotary CAM
 
-Revision 9 resolves the Revision 8 re-review. During implementation on October 30, 2026, the owner made further changes, edited into this revision and logged in the decision log (units follow ncSender, the chess-set library and its picker, export before Phase 0 with outcome A, beta versioning, GPL-3.0, DISC-1/5/7). They have not been through an EGM review; a Revision 10 snapshot and review round would cover them. Revision history: `docs/designs/egm/history/CHANGES.md`. Review rounds: `docs/designs/egm/reviews/INDEX.md`. Owner decisions: `docs/product/decisions/product-decisions.md`. The woodworking build notes live in `docs/research/domain/wooden-staunton-build-notes.md`.
+Revision 9 resolves the Revision 8 re-review. During implementation on October 30, 2026, the owner made further changes, edited into this revision and logged in the decision log (units follow ncSender, the chess-set library and its picker, removing installed sets, export before Phase 0 with outcome A, beta versioning, GPL-3.0, DISC-1/5/7). They have not been through an EGM review; a Revision 10 snapshot and review round would cover them. Revision history: `docs/designs/egm/history/CHANGES.md`. Review rounds: `docs/designs/egm/reviews/INDEX.md`. Owner decisions: `docs/product/decisions/product-decisions.md`. The woodworking build notes live in `docs/research/domain/wooden-staunton-build-notes.md`.
 
 **File paths** in this document are relative to the project root (`Chess-Set-Creator/`), not to this file. Spelling is British; dates are written as month day, year.
 
@@ -220,6 +220,7 @@ Rotary CAM lets the user choose the turning axis (X/Y/Z) and "On axis: Model ori
 - Packages come from a **chess-set library**: one repository holding one package per set style, each released on its own (§5.9). v1 publishes one set, Staunton. (owner, 2026-10-30)
 - The user downloads a set's ZIP, unzips it and imports the folder.
 - **Library picker** [C] (owner, 2026-10-30): the dialog lists the sets in the library and installs one in a click (implementation plan P4.8a). Several sets can be installed, and the user picks which one is in use. Importing a package folder stays, for offline use and sets outside the library.
+- **Removing a set** [C] (owner, 2026-10-31): any installed set can be removed in the dialog, after an inline confirmation. Its stored files are deleted from the File Manager and its settings entry is dropped. If it was in use, the next installed set takes its place; if it was the last, the dialog shows "No chess set installed". Exports already written are not touched (P4.8).
 - Automatic update prompts, checksums and version pinning are [v2].
 
 **Package rules** [P]:
@@ -667,7 +668,7 @@ All from ncSender source at commit `2f8a659`, checked October 30, 2026:
 - **Request size:** the server's request size limit is 200 MB (`ServerBuilder.cs:91`).
 - **Persistence:** the File Manager is on the server, so everything stored there survives plugin updates and can be reached from any client.
 - **Uploads:** the File Manager's upload picker is limited to `.nc .gcode .gc .ngc .tap .txt`. That limit applies only to browser uploads, not to the save API. An upload (`POST /api/gcode-files`) also makes the uploaded file the active program (`GcodeFileEndpoints.cs:51–53`).
-- **Folders:** `POST /api/gcode-files/folders/delete {path}` deletes a folder.
+- **Folders:** `POST /api/gcode-files/folders/delete {path}` deletes a folder and everything in it, and returns `200` when the folder doesn't exist (`GcodeFileEndpoints.cs:148–156`, `GcodeFileService.cs:175–184`; checked 2026-10-31). The plugin uses it only to remove an installed set (P4.8).
 - **Load:** clicking a file in the File Manager calls the load routine with no extension check (R2).
 - **GitHub cross-origin reads** (checked 2026-10-30): `raw.githubusercontent.com` and `api.github.com` send `access-control-allow-origin: *`. A release-asset download (`github.com/.../releases/download/...`) answers with a 302 and no such header, so a browser dialog can't read release ZIPs.
 - **Units setting** (checked at ncSender commit `a75e84c`, October 30, 2026): `GET /api/settings/{name}` returns `{key, value}`, or 404 (`ServerBuilder.cs:553–559`). `unitsPreference` is `"metric"` or `"imperial"`, default `"metric"` (`SettingsManager.cs:218`). When settings change, the server broadcasts `settings-changed`, and each client re-fires it as a window `CustomEvent('settings-changed')` whose `detail` holds only the changed keys (`lib/api.js:721–728`). The plugin dialog runs in that window, so it receives the event.
@@ -1156,6 +1157,11 @@ All three are pure.
 - The page records loaded keys in a `Set` and skips keys it has already loaded.
 - A missing file (`null`), including a missing `LICENSE`, throws *"The installed package files are missing (<path>). Re-import the package."*
 
+**`removePackage({fm, saveSettings, key})`** (owner, 2026-10-31):
+1. Save settings without `packages[key]`. If `key` was `lastPackage`, or `lastPackage` no longer names an installed set, set it to the first remaining key, or `null`. If the save fails, stop and show *"Removing the set failed: settings couldn't be updated (<status>). The set is still installed."*
+2. Drop `key` from the loaded-keys `Set`, so a re-install loads its meshes again.
+3. Delete the folder `PACKAGE_ROOT/<key>` with `fm.deleteFolder`, only if `key` matches `<id>@<version>` (the §5.6 rules). The path is built from the key, never from the stored `dir`. If the delete fails, the set stays removed and the dialog warns: *"<name> was removed, but deleting its files failed (<status>). They stay in <dir> and are replaced if you install the set again."*
+
 #### P4.8a `library.js` (library picker)
 
 - `LIBRARY_INDEX = https://raw.githubusercontent.com/infield/chessset-library/main/library.json`; set files are `LIBRARY_RAW/<tag>/<path>/<file>`, each path segment URI-encoded.
@@ -1187,7 +1193,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 - **Shell:** a header (title, build tag, and a note saying the units follow ncSender), pinned while the dialog scrolls, and two columns that stack below 900 px. Text is set only with `textContent`; there is no `innerHTML` anywhere in `src/`. The style element (`id="csc-style"`) is tagged with the build and replaced when the build changes, since a plugin update doesn't reload the page. It uses ncSender CSS variables. Selectors use (0,2,1) specificity, e.g. `.csc-shell .csc-main button` (AAxis item 9). No `alert`, `confirm` or `prompt`.
 - **First-run setup:** shown when `machine === null`. It holds the max blank length and 1–4 jaw-set rows (name, min, max), filled with `DEFAULT_MACHINE`, and a **Save machine settings** button. Nothing else shows until it is saved.
 - **Left column**, in order:
-  1. **Chess set:** the set in use; the installed sets, to switch between (when there are several); **Browse library**, which lists the library's sets with Install / Update / Use (§5.9); **Import package folder**; progress and errors.
+  1. **Chess set:** the set in use; the installed sets, to switch between (when there are several); **Browse library**, which lists the library's sets with Install / Update / Use (§5.9); **Import package folder**; **Remove** for the set in use and ✕ for each other installed set, each opening an inline confirmation (Remove / Cancel); progress and errors.
   2. **Size:** queen base diameter.
   3. **Stock:** length, shape and width, with a jaw-set readout.
   4. **Allowances:** chuck reservation, tailstock reservation, gap, radial allowance. (No connecting-neck input: outcome A, D5.)
@@ -1472,6 +1478,7 @@ These tests use a fake `fm` (with a fixed tree) and a fake `call`, both of which
    2a. With the library unreachable (requests to `raw.githubusercontent.com` aborted), **Browse library** shows the §5.10 message.
    2b. Requests to `raw.githubusercontent.com` are served from `tests/fixtures/library.json` and `packages/<id>/`. **Browse library** → **Install** installs Staunton; 8 files are stored, and it shows **In use**.
    8b. With two sets installed (Staunton and `script-name`), switching back to Staunton changes the set in use and stores `lastPackage`.
+   8c. Remove the `script-name` set: **Cancel** keeps it; **Remove** drops it from settings and deletes its folder, and Staunton's 8 files stay.
 3. Set the stock length to 12 in. Expect 5 cards.
 4. The mock starts with ncSender set to imperial. Switch it to metric with `setHostUnits('metric')`. The first card's stock shows `304.8 mm × 50.8 mm`, with `12.00 in × 2.00 in` below. The gap field shows `10`, and the plan is unchanged. Step 7 also checks that the stored inputs are mm (`stockLength` exactly `304.8`).
 5. Type width 38.1 (mm): the error box lists 5 pieces. Set the width back to 50.8.
@@ -1483,6 +1490,7 @@ These tests use a fake `fm` (with a fixed tree) and a fake `call`, both of which
 11. `POST /__mock/fail-save {after:3}`, then export. **Download files** is offered, and the incomplete folder has no `layout.json`. The browser's console error for that forced 500 is expected and removed from the error count.
     11b. Click `light_blank_01.stl` in the list: the browser downloads it, and it starts with `solid light_blank_01`.
     11c. Post a `server-state-update` with `jobLoaded.status: 'running'`: both actions are disabled with the §5.10 message, and enabled again when the job stops.
+    12b. Remove Staunton, the last set and the one in use: no set is shown, settings hold no packages and `lastPackage` is `null`, and nothing is left under `.chess-set-creator/`.
 12. The mock log has no `FORBIDDEN` lines.
 
 ### P6. Order of work and checkpoints

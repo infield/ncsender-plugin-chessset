@@ -44,6 +44,7 @@ This log holds decisions made by the owner, Marc Infield. The October 30, 2026 e
 | 2026-10-30 | **Connecting necks taken out.** The owner expects Rotary CAM to provide the rods between pieces, so exports follow outcome A (empty gaps) and the switch is removed (0.1.8). The outcome-B code stays dormant until Phase 0 confirms. | Spec §5.1, §5.5, D5, P4.5, P4.10 |
 | 2026-10-30 | **Library picker in v1.** The dialog lists the chess-set library's sets (`library.json`) and installs one by downloading its files from GitHub at its release tag; several sets can be installed and switched. Moved from v2. | Spec §5.6, §5.9, §5.10, §7, §12, P4.8a, P4.10, P5.8 |
 | 2026-10-30 | **More sets in the library** (all 0.1.0 beta): Dubrovnik I 1950 (Zarlor, CC BY), Minimal Look (FunFunBoy, CC BY-NC), Minimalist contemporary (link0007, CC BY-NC), Gothic (nestra, CC BY; published at the owner's choice despite being after Peter Ganine's design). Prepared with the packaging tool's new recipe mode. **Duchamp not published** (owner confirmed 2026-10-30): prepared from clarkerubber's copy for reference only, because the Duchamp estate objected to these models in 2014. | Spec §10, P4.11; `packages/recipes/` |
+| 2026-10-31 | **Remove installed sets.** The dialog can remove any installed set after an inline confirmation: its settings entry is dropped first, then its stored folder is deleted with the File Manager's folder delete. Exports already written are not touched. | Spec §5.6, §12, P4.8, P4.10, P5.8 |
 
 ## Pending
 

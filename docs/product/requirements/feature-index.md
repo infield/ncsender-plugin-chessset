@@ -27,7 +27,7 @@ The spec includes the owner's decisions of 2026-10-30, A1–A8 and DISC-1 … DI
 | F8 | Rotary CAM handoff sidecar (`.rotary.json`) | §5.11 | AC-EXP-08 | M2 · Phase 5 · `src/sidecar.js` | O-13 (Rotary CAM author) | **In implementation**: sidecar written in 0.1.7; Rotary CAM reading it waits on O-13 |
 | F9 | Plan UI, 2-D preview, units display | §4; §5.1; §6 | AC-IN-01 … 03, AC-UI-01 | M1 · Phase 4 · `src/ui/*`, `src/units.js` | — (units follow ncSender, decided 2026-10-30) | **Ready for validation**: built and released in 0.1.x beta (M1); owner check AC-UI-01 |
 | F10 | Plugin shell, settings, build and release | §5.9; §6; plan P1–P2 | AC-REL-01; phase exits (P3) | M1 · Phase 3 · `com.infield.chessset/*`, `build.mjs`, `build.sh` | — (DISC-5 decided: latest ncSender 2.x) | **Ready for validation**: built and released in 0.1.x beta (M1); owner check AC-REL-01 |
-| F11 | Library picker: list, install and switch sets from the chess-set library | §5.6; §5.9; P4.8a | AC-PKG-02 (by picker) | 0.1.8 · `src/library.js`, `src/ui/app.js` | Checksums, automatic update prompts, version pinning stay v2 | **Ready for validation**: built in 0.1.8 |
+| F11 | Library picker: list, install, switch and remove sets from the chess-set library | §5.6; §5.9; P4.8; P4.8a | AC-PKG-02 (by picker) | 0.1.8 · `src/library.js`, `src/package.js`, `src/ui/app.js` | Checksums, automatic update prompts, version pinning stay v2 | **Ready for validation**: built in 0.1.8; removing sets added after 0.1.9 (not yet built into a release) |
 | F12 | Cut-progress tracking | §2 (deferred) | none | not planned (v2) | — | Discovery needed |
 
 **Milestones** (plan P3):

@@ -59,6 +59,8 @@ ${S} .csc-pv-axis { stroke: var(--color-text-secondary); stroke-width: 1; stroke
 ${S} .csc-pv-neck { fill: color-mix(in srgb, var(--color-text-secondary) 60%, transparent); }
 ${S} .csc-libset { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-small, 8px); }
 ${S} button.csc-set { text-align: left; }
+${S} .csc-confirm { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid var(--color-danger, #e74c3c); border-radius: var(--radius-small, 8px); font-size: 13px; }
+${S} button.csc-danger { background: var(--color-danger, #e74c3c); border-color: var(--color-danger, #e74c3c); color: #fff; font-weight: 600; }
 ${S} button.csc-set.csc-on { border-color: var(--color-accent); opacity: 1; }
 ${S} .csc-downloads { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
 ${S} .csc-downloads button.csc-link { color: var(--color-accent); text-align: left; }

@@ -1,5 +1,6 @@
 // File Manager and plugin-settings client (implementation plan P4.7).
-// Only these routes are used. The plugin never calls /api/gcode-files/load*,
+// Only these routes are used (folders/delete only for an installed set's own
+// folder). The plugin never calls /api/gcode-files/load*,
 // /api/gcode-job or /api/send-command.
 import { PLUGIN_ID } from './config.js';
 
@@ -39,6 +40,11 @@ export function createFm(base = '') {
       if (res.status === 404) return null;
       if (!res.ok) throw await fail(res);
       return (await res.json()).content;
+    },
+    // Deletes a folder and everything in it; a missing folder is not an error (§12).
+    async deleteFolder(path) {
+      const res = await request('POST', '/api/gcode-files/folders/delete', { path });
+      if (!res.ok) throw await fail(res);
     },
     async tree() {
       const res = await request('GET', '/api/gcode-files');

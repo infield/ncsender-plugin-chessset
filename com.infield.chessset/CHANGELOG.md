@@ -2,6 +2,10 @@
 
 Versioning: `0.1.x` while planning is built and tested. **Every build that gets zipped increments the patch number** (0.1.0 → 0.1.1 → …), and the ZIP is named with the version. Set `0.2.0` by hand once the 12 in test blank has been cut.
 
+## 0.1.10 — 2026-10-31 (beta)
+- **Remove installed sets**: **Remove** next to the set in use, ✕ next to each other installed set, with a confirmation first. The set's stored files are deleted from ncSender; exports you've already written are not touched
+- Removing the set in use switches to another installed set, or shows "No chess set installed" if none is left
+
 ## 0.1.9 — 2026-10-30 (beta)
 - README: how the plugin started (a joke on the ncSender Discord), and the five chess sets in the library
 - No changes to how the plugin works

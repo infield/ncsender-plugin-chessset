@@ -118,3 +118,36 @@ export async function loadPackageMeshes({ fm, call, key, pkg }) {
   await call('loadPackage', { key, b64 });
   loaded.add(key);
 }
+
+// Remove an installed set: drop it from settings first, then delete its
+// folder. If the set was in use, the first remaining set takes its place.
+// Only `PACKAGE_ROOT/<id>@<version>` is ever deleted, never a path read from
+// settings. Returns {ok:true, name, warning?} or {ok:false, error}.
+const KEY = /^[a-z0-9-]+@\d+\.\d+\.\d+$/;
+
+export async function removePackage({ fm, saveSettings, key }) {
+  let record = null;
+  try {
+    await saveSettings((current) => {
+      record = current.packages[key] || null;
+      const packages = { ...current.packages };
+      delete packages[key];
+      const lastPackage = current.lastPackage === key || !(current.lastPackage in packages)
+        ? (Object.keys(packages)[0] ?? null)
+        : current.lastPackage;
+      return { packages, lastPackage };
+    });
+  } catch (e) {
+    return { ok: false, error: `Removing the set failed: settings couldn't be updated (${e.status || 'no connection'}). The set is still installed.` };
+  }
+  loaded.delete(key);
+  const name = record ? `${record.name} ${record.version}` : key;
+  if (!KEY.test(key)) return { ok: true, name };
+  const dir = `${PACKAGE_ROOT}/${key}`;
+  try {
+    await fm.deleteFolder(dir);
+  } catch (e) {
+    return { ok: true, name, warning: `${name} was removed, but deleting its files failed (${e.status || 'no connection'}). They stay in ${dir} and are replaced if you install the set again.` };
+  }
+  return { ok: true, name };
+}
