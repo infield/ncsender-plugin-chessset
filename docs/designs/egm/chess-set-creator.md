@@ -765,7 +765,7 @@ One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as A
 | D11 | Plugin licence | GPL-3.0. [C] (DISC-8) `LICENSE` holds the full GPL text. | Matches AAxis and ncCAM. The owner briefly chose a dual GPL/commercial licence on 2026-10-30, then returned to GPL-3.0 only the same day. |
 | D12 | Versioning | The manifest starts at `0.1.0`. `build.sh` bumps the patch number unless given `--no-bump`. The first build uses `--no-bump` and ships 0.1.0. The planning milestone ships as 0.1.x. After the 12 in test blank is cut, set `0.2.0` by hand and build with `--no-bump`. Every build needs a CHANGELOG entry. | AAxis `CLAUDE.md` item 5. Publishing 0.1.x publicly departs from AAxis's "1.0.0 when shared publicly"; the owner chose public releases from M1 (DISC-8). |
 | D13 | Host version floor and updates | `minAppVersion "2.0.88"`, `platforms {"v2":"2.0.88","pro-v2":"2.0.149"}`. `repository: "https://github.com/infield/ncsender-plugin-chessset"`, so ncSender's update check finds releases. | ncCAM's version values. DISC-5 may change the platforms. DISC-8 for the repository. |
-| D14 | Releases | **Plugin:** tag `v<version>`, then a GitHub release with `com.infield.chessset-<version>.zip` attached (the AAxis flow). **Model package:** `<id>-<version>.zip`, holding the package folder, on a release of a separate package repository [P]. Creating either repository needs owner approval. | §5.9 |
+| D14 | Releases | **Plugin:** tag `v<version>`, then a GitHub release with `com.infield.chessset-<version>.zip` attached (the AAxis flow). **Model package:** `<id>-<version>.zip`, holding the package folder, on a release of a separate package repository, `infield/chessset-staunton-package` [P]. Creating either repository needs owner approval (given at M1, 2026-10-30). | §5.9 |
 
 **Detail 1 — the Worker (D2).** The same bundle, `lib/app.js`, runs in two places:
 - **Inside a Worker** (`typeof document === 'undefined'`): it receives messages posted as `{...args, id, type}`, so `id` and `type` can't be overwritten (ncCAM `index.js:56`). It answers with `{id, ok:true, result}` or `{id, ok:false, error}`. `ArrayBuffer` results are transferred.
@@ -906,6 +906,8 @@ Write the Size, Stock, Allowances, Sides and Machine sections (P4.10), the plan 
 **Result (2026-10-30):** `ui-check --until=plan` passes, with an added jaw-set check (AC-IN-04). Built as 0.1.1; 0.1.2 fixes a stale stylesheet after an update without a page reload (found by the owner in ncSender; the style element is now tagged with the build and replaced when it changes, and ui-check step 3b covers it). `profile()` now also samples edge crossings at slice boundaries (P4.3), because vertices alone understated the radius in slices spanned by long edges; packages imported by 0.1.0 need one re-import. AC-UI-01 (preview to scale) is a manual check for the owner.
 
 **M1 release:** with owner approval, create the public plugin repository and publish 0.1.x. Publish the package ZIP on a release of the separate package repository (D14).
+
+**M1 released (2026-10-30):** the owner approved the full release. `infield/ncsender-plugin-chessset` made public; release `v0.1.5` with the plugin ZIP. `infield/chessset-staunton-package` created (public); release `v1.0.0` with `staunton-clarkerubber-1.0.0.zip`, which was checked to import with the plugin's import code before publishing. AC-REL-01 and AC-PKG-02 remain manual checks for the owner.
 
 #### Phase 5 — Export (needs Phase 0)
 

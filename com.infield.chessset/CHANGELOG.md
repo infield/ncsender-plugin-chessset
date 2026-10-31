@@ -2,6 +2,10 @@
 
 Versioning: `0.1.x` while planning is built and tested. **Every build that gets zipped increments the patch number** (0.1.0 → 0.1.1 → …), and the ZIP is named with the version. Set `0.2.0` by hand once the 12 in test blank has been cut.
 
+## 0.1.5 — 2026-10-30 (first public release)
+- First public release: planning (M1). Export for Rotary CAM comes in 0.2
+- README links to the plugin's releases and to the Staunton model package release
+
 ## 0.1.4 — 2026-10-30
 - The side views show each piece as seen from the side, so the knight shows its head instead of a round blob; outlines are smoother
 - **Re-import the package once** to get the new knight view (older imports still draw, with the round outline)

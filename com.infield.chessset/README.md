@@ -8,7 +8,7 @@ The plugin never moves the machine: it doesn't load programs, start jobs or send
 
 ## Install
 
-1. Download `com.infield.chessset-<version>.zip` from the plugin's GitHub releases.
+1. Download `com.infield.chessset-<version>.zip` from the [plugin's latest release](https://github.com/infield/ncsender-plugin-chessset/releases/latest).
 2. In ncSender, open **Settings → Plugins** and install the ZIP.
 3. Open **Chess Set Creator** from the tool menu.
 
@@ -26,7 +26,7 @@ The values shown are an example machine. Edit them to match yours. You can chang
 
 The chess-piece models are not inside the plugin. They come as a separate package:
 
-1. Download the package ZIP (for example `staunton-clarkerubber-1.0.0.zip`) from the package's GitHub release page.
+1. Download the package ZIP (for example `staunton-clarkerubber-1.0.0.zip`) from the [Staunton package's latest release](https://github.com/infield/chessset-staunton-package/releases/latest).
 2. Unzip it. You get a folder holding `chess-set.json`, six `.stl` files and `LICENSE`.
 3. In the plugin, click **Import package folder** and pick that folder.
 

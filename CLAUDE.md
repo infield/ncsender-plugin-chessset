@@ -54,9 +54,9 @@ EGM writes its reports under fixed names (`zoom_out_report.md`, `critic_report.m
 
 ## Git
 
-- **Repo:** git, branch `main`, the same set-up as AAxis. Remote `origin` = https://github.com/infield/ncsender-plugin-chessset (**private** for now; it becomes public at the M1 release, per DISC-8). Use the HTTPS remote, as AAxis does; this machine has no SSH key for GitHub.
+- **Repo:** git, branch `main`, the same set-up as AAxis. Remote `origin` = https://github.com/infield/ncsender-plugin-chessset (**public** since the M1 release, 2026-10-30, per DISC-8). The model package is published from https://github.com/infield/chessset-staunton-package (D14). Use the HTTPS remote, as AAxis does; this machine has no SSH key for GitHub.
 - **Pushing:** push only when the owner asks.
-- **Branch protection:** not available while the repo is private on GitHub Free. When it goes public at M1, protect `main` against force pushes and deletion. Pull requests aren't required; commits go straight to `main`, as in AAxis.
+- **Branch protection:** `main` is protected against force pushes and deletion (set at M1). Pull requests aren't required; commits go straight to `main`, as in AAxis.
 - **Google Drive:** the repo lives on a Drive shared drive. Git needs delete permission on the folder to clean up its lock and temp files (see `../AAxis/CLAUDE.md`, Git / releases).
 - **Moves:** use `git mv` so history follows the file.
 - **Commits:** commit only when asked.
