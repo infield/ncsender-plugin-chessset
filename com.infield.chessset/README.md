@@ -26,7 +26,7 @@ The values shown are an example machine. Edit them to match yours. You can chang
 
 ## Get a chess set
 
-The chess-piece models are not inside the plugin. They come from the [chess-set library](https://github.com/infield/chessset-library), one package per set style.
+The chess-piece models are not inside the plugin. They come from the [chess-set library](https://github.com/infield/chessset-library), one package per set style. It has five sets so far: Staunton, Dubrovnik I 1950, Minimal Look, Minimalist contemporary and Gothic. Check each set's licence; some are for non-commercial use only.
 
 **From the library (easiest):** in the **Chess set** section, click **Browse library**, then **Install** next to a set. If you install several, pick the one in use from the same section.
 

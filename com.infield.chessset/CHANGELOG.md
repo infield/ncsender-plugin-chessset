@@ -2,6 +2,10 @@
 
 Versioning: `0.1.x` while planning is built and tested. **Every build that gets zipped increments the patch number** (0.1.0 → 0.1.1 → …), and the ZIP is named with the version. Set `0.2.0` by hand once the 12 in test blank has been cut.
 
+## 0.1.9 — 2026-10-30 (beta)
+- README: how the plugin started (a joke on the ncSender Discord), and the five chess sets in the library
+- No changes to how the plugin works
+
 ## 0.1.8 — 2026-10-30 (beta)
 - **Browse library**: lists the sets in the chess-set library (github.com/infield/chessset-library) and installs one in a click; no download, unzip or folder import needed
 - Several sets can be installed; switch the one in use from the Chess set section
