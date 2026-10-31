@@ -115,7 +115,12 @@ try {
     expect(Object.keys(store.files).length === 0, 'a bad package saved files');
   });
 
-  await step('2a. library offline: Browse library says so and suggests a folder import', async () => {
+  await step('2a. with no set installed the library section is open and lists the sets', async () => {
+    expect(await page.$eval('[data-section="library"]', (d) => d.open), 'library section closed with no set installed');
+    await page.waitForSelector('[data-lib-set="staunton-clarkerubber"] [data-install]');
+  });
+
+  await step('2a. library offline: Refresh library says so and suggests a folder import', async () => {
     libraryOnline = false;
     await page.click('[data-act="browse"]');
     await page.waitForSelector('[data-library-error]');
@@ -151,6 +156,13 @@ try {
     await page.click('[data-act="close"]');
     await page.click('#harness-open');
     await page.waitForSelector('[data-pkg="name"]', { timeout: 15000 });
+    const open = () => page.$eval('[data-section="library"]', (d) => d.open);
+    expect(!(await open()), 'library section open with a set installed');
+    expect(!(await page.locator('[data-lib-set]').first().isVisible()), 'library sets visible while collapsed');
+    await page.click('[data-act="library"]');
+    await page.waitForSelector('[data-lib-set="staunton-clarkerubber"] [data-use-set]');
+    await page.click('[data-act="library"]');
+    expect(!(await open()), 'library section did not close');
   });
 
   if (until !== 'import') {

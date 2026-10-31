@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { LibraryError, fetchLibrary, fetchSetFiles, setFileUrl, validateIndex } from '../src/library.js';
+import { LibraryError, compareVersions, fetchLibrary, fetchSetFiles, libraryAction, setFileUrl, validateIndex } from '../src/library.js';
 import { importPackage } from '../src/package.js';
 import { createHandlers } from '../src/worker.js';
 import { LIBRARY_INDEX } from '../src/config.js';
@@ -64,4 +64,21 @@ test('installing Staunton from the library: downloads 8 files and passes the imp
 
 test('a library entry that does not match its chess-set.json is refused', { skip }, async () => {
   await assert.rejects(fetchSetFiles({ ...staunton, version: '0.1.1', tag: staunton.tag }, { fetchFn: fakeGitHub() }), /lists staunton-clarkerubber 0\.1\.1, but its chess-set\.json is staunton-clarkerubber 0\.1\.0/);
+});
+
+test('versions compare numerically, not as text', () => {
+  assert.ok(compareVersions('0.1.10', '0.1.9') > 0);
+  assert.ok(compareVersions('0.1.0', '1.0.0') < 0);
+  assert.equal(compareVersions('2.0.0', '2.0.0'), 0);
+});
+
+test('the library offers Update only when an older version is installed', () => {
+  const set = { id: 'staunton-clarkerubber', version: '0.1.0' };
+  const pkg = (version, id = set.id) => ({ [`${id}@${version}`]: { id, version } });
+  assert.equal(libraryAction(set, {}), 'install');
+  assert.equal(libraryAction(set, pkg('0.1.0')), 'have');
+  assert.equal(libraryAction(set, pkg('0.0.9')), 'update');
+  assert.equal(libraryAction(set, pkg('1.0.0')), 'install'); // the withdrawn 1.0.0 is newer
+  assert.equal(libraryAction(set, { ...pkg('0.0.9'), ...pkg('1.0.0') }), 'install');
+  assert.equal(libraryAction(set, pkg('0.0.1', 'other-set')), 'install');
 });

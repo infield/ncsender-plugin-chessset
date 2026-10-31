@@ -5,7 +5,7 @@ import { COUNTS_PER_SIDE, DEFAULT_MACHINE, ROLES } from '../config.js';
 import { REFUSE_RUNNING, REFUSE_WORKER, defaultJobName, downloadFiles, exportJob, validJobName } from '../exporter.js';
 import { createFm } from '../fm.js';
 import { importPackage, removePackage } from '../package.js';
-import { fetchLibrary, fetchSetFiles } from '../library.js';
+import { fetchLibrary, fetchSetFiles, libraryAction } from '../library.js';
 import { plan } from '../planner.js';
 import { load, save } from '../settings.js';
 import { fmtOne, fmtPair } from '../units.js';
@@ -46,6 +46,7 @@ export async function mountApp(root, host, engine) {
     machineDraft: null,
     machineOpen: false,
     library: null, // null, {loading:true}, {error}, or {sets}
+    libraryOpen: null, // null until toggled: open only when no set is installed
     jobName: null, // null follows the default name
     exporting: false,
     exportStatus: '',
@@ -186,7 +187,7 @@ export async function mountApp(root, host, engine) {
     const pkg = installed();
     const input = h('input', { type: 'file', class: 'csc-hidden', multiple: true, attrs: { webkitdirectory: '', 'data-import': '' } });
     input.addEventListener('change', () => runImport(() => input.files));
-    const browse = h('button', { type: 'button', class: pkg ? '' : 'csc-primary', text: state.library?.sets ? 'Refresh library' : 'Browse library',
+    const browse = h('button', { type: 'button', text: 'Refresh library',
       disabled: state.importing || state.library?.loading, dataset: { act: 'browse' }, onclick: loadLibrary });
     const folder = h('button', { type: 'button', text: 'Import package folder', disabled: state.importing,
       dataset: { act: 'import' }, onclick: () => input.click() });
@@ -235,11 +236,27 @@ export async function mountApp(root, host, engine) {
       line,
       switcher,
       confirmBox,
-      h('div', { class: 'csc-row' }, browse, folder, input),
-      libraryList(),
+      librarySection(pkg, browse, folder),
+      input,
       state.importProgress ? h('div', { class: 'csc-muted', dataset: { importProgress: '' }, text: state.importProgress }) : null,
       state.importDone ? h('div', { class: 'csc-ok', text: state.importDone }) : null,
       errors);
+  }
+
+  // The library list and the import button, collapsed so normally only the
+  // set in use shows. Opening it reads the library the first time.
+  function librarySection(pkg, browse, folder) {
+    const details = h('details', { class: 'csc-lib', dataset: { section: 'library' } },
+      h('summary', { text: 'Chess-set library', dataset: { act: 'library' } }),
+      h('div', { class: 'csc-col', attrs: { style: 'gap:8px; margin-top:8px' } },
+        libraryList(),
+        h('div', { class: 'csc-row' }, browse, folder)));
+    if (state.libraryOpen ?? !pkg) details.open = true;
+    details.addEventListener('toggle', () => {
+      state.libraryOpen = details.open;
+      if (details.open && state.library === null) loadLibrary();
+    });
+    return details;
   }
 
   function libraryList() {
@@ -251,8 +268,9 @@ export async function mountApp(root, host, engine) {
     return h('div', { class: 'csc-col', dataset: { library: '' }, attrs: { style: 'gap:8px' } },
       lib.sets.map((set) => {
         const key = keyOf(set);
-        const have = state.settings.packages[key];
-        const older = Object.values(state.settings.packages).some((p) => p.id === set.id && p.version !== set.version);
+        const kind = libraryAction(set, state.settings.packages);
+        const have = kind === 'have';
+        const older = kind === 'update';
         const active = key === state.settings.lastPackage;
         const action = have
           ? h('button', { type: 'button', text: active ? 'In use' : 'Use', disabled: active || state.importing, dataset: { useSet: key }, onclick: () => useSet(key) })

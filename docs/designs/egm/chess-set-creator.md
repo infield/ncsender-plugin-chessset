@@ -348,7 +348,8 @@ v1 keeps the last job's inputs in settings, so the dialog reopens with them. [P]
 - The library's `main` branch holds `library.json`, its index: `{format:"chessset-library", formatVersion:1, sets:[{id, name, version, tag, path, author?, license, attribution, source, description?}]}`. `tag` must be `<id>-v<version>`, and `path` must pass the §5.6 path rule and start with `sets/`; other entries are skipped.
 - The dialog reads the index, and installs a set by downloading `chess-set.json` and the files it names from `raw.githubusercontent.com` at the set's tag. Release ZIPs can't be used: GitHub's release-asset download doesn't allow cross-origin reads, while raw files do (§12). There is no ZIP to unpack.
 - Downloaded files go through exactly the same import checks and storage as a picked folder (§5.6, §5.7). The id and version in the index must match the downloaded `chess-set.json`.
-- The list shows each set's name, version, description, licence and attribution, and **Install**, **Update to <version>** (an older version of that set is installed), **Use** or **In use**.
+- The list shows each set's name, version, description, licence and attribution, and **Install**, **Update to <version>** (only older versions of that set are installed; versions compare numerically), **Use** or **In use**. A set with a newer version installed shows **Install**.
+- The list sits in a collapsed **Chess-set library** section, with **Refresh library** and **Import package folder**, so normally only the set in use shows. It is open while no set is installed, and the index is read the first time it opens. (owner, 2026-10-31)
 - Installed sets are listed so the user can switch the one in use (`lastPackage`).
 - Without a connection, the picker says so and points to **Import package folder**.
 - A new set must be tagged and released before `library.json` lists it.
@@ -1193,7 +1194,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 - **Shell:** a header (title, build tag, and a note saying the units follow ncSender), pinned while the dialog scrolls, and two columns that stack below 900 px. Text is set only with `textContent`; there is no `innerHTML` anywhere in `src/`. The style element (`id="csc-style"`) is tagged with the build and replaced when the build changes, since a plugin update doesn't reload the page. It uses ncSender CSS variables. Selectors use (0,2,1) specificity, e.g. `.csc-shell .csc-main button` (AAxis item 9). No `alert`, `confirm` or `prompt`.
 - **First-run setup:** shown when `machine === null`. It holds the max blank length and 1–4 jaw-set rows (name, min, max), filled with `DEFAULT_MACHINE`, and a **Save machine settings** button. Nothing else shows until it is saved.
 - **Left column**, in order:
-  1. **Chess set:** the set in use; the installed sets, to switch between (when there are several); **Browse library**, which lists the library's sets with Install / Update / Use (§5.9); **Import package folder**; **Remove** for the set in use and ✕ for each other installed set, each opening an inline confirmation (Remove / Cancel); progress and errors.
+  1. **Chess set:** the set in use; the installed sets, to switch between (when there are several); a collapsed **Chess-set library** section (open when no set is installed) holding the library's sets with Install / Update / Use (§5.9), **Refresh library** and **Import package folder**; **Remove** for the set in use and ✕ for each other installed set, each opening an inline confirmation (Remove / Cancel); progress and errors.
   2. **Size:** queen base diameter.
   3. **Stock:** length, shape and width, with a jaw-set readout.
   4. **Allowances:** chuck reservation, tailstock reservation, gap, radial allowance. (No connecting-neck input: outcome A, D5.)
@@ -1475,8 +1476,8 @@ These tests use a fake `fm` (with a fixed tree) and a fake `call`, both of which
 1. Open the dialog. The first-run setup shows; save it with the defaults.
    1b. Open `config-ui?raw=1` (the placeholders not filled in). The dialog falls back to port 8090 and shows no page errors.
 2. Import `packages/staunton-clarkerubber/` through `setInputFiles` on the `webkitdirectory` input. The package shows as installed.
-   2a. With the library unreachable (requests to `raw.githubusercontent.com` aborted), **Browse library** shows the §5.10 message.
-   2b. Requests to `raw.githubusercontent.com` are served from `tests/fixtures/library.json` and `packages/<id>/`. **Browse library** → **Install** installs Staunton; 8 files are stored, and it shows **In use**.
+   2a. With no set installed, the **Chess-set library** section is open and lists the sets. With the library unreachable (requests to `raw.githubusercontent.com` aborted), **Refresh library** shows the §5.10 message.
+   2b. Requests to `raw.githubusercontent.com` are served from `tests/fixtures/library.json` and `packages/<id>/`. **Refresh library** → **Install** installs Staunton; 8 files are stored, and it shows **In use**.
    8b. With two sets installed (Staunton and `script-name`), switching back to Staunton changes the set in use and stores `lastPackage`.
    8c. Remove the `script-name` set: **Cancel** keeps it; **Remove** drops it from settings and deletes its folder, and Staunton's 8 files stay.
 3. Set the stock length to 12 in. Expect 5 cards.

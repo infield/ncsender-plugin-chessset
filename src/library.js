@@ -38,6 +38,24 @@ export async function fetchLibrary(fetchFn = fetch) {
   return validateIndex(await get(fetchFn, LIBRARY_INDEX, 'json'));
 }
 
+// Compares two x.y.z versions numerically: <0, 0 or >0.
+export function compareVersions(a, b) {
+  const pa = String(a).split('.').map(Number);
+  const pb = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) - (pb[i] || 0);
+  return 0;
+}
+
+// What the library list offers for a set (§5.9): 'have' when this exact
+// version is installed, 'update' when only older versions of the set are
+// installed, else 'install' (none installed, or a newer one is).
+export function libraryAction(set, packages) {
+  const versions = Object.values(packages || {}).filter((p) => p?.id === set.id).map((p) => p.version);
+  if (versions.includes(set.version)) return 'have';
+  if (versions.length && versions.every((v) => compareVersions(v, set.version) < 0)) return 'update';
+  return 'install';
+}
+
 // The raw URL of one file of a set, pinned to the set's release tag.
 export function setFileUrl(set, name) {
   const parts = `${set.path}/${name}`.split('/').map(encodeURIComponent).join('/');

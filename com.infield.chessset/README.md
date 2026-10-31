@@ -28,7 +28,7 @@ The values shown are an example machine. Edit them to match yours. You can chang
 
 The chess-piece models are not inside the plugin. They come from the [chess-set library](https://github.com/infield/chessset-library), one package per set style. It has five sets so far: Staunton, Dubrovnik I 1950, Minimal Look, Minimalist contemporary and Gothic. Check each set's licence; some are for non-commercial use only.
 
-**From the library (easiest):** in the **Chess set** section, click **Browse library**, then **Install** next to a set. If you install several, pick the one in use from the same section. To remove a set, click **Remove** (the set in use) or ✕ (any other set) and confirm; its stored files are deleted, and you can install it again later.
+**From the library (easiest):** in the **Chess set** section, open **Chess-set library** (it is already open when no set is installed), then click **Install** next to a set. If you install several, pick the one in use from the same section. To remove a set, click **Remove** (the set in use) or ✕ (any other set) and confirm; its stored files are deleted, and you can install it again later.
 
 **By hand** (offline, or your own set):
 

@@ -2,6 +2,10 @@
 
 Versioning: `0.1.x` while planning is built and tested. **Every build that gets zipped increments the patch number** (0.1.0 → 0.1.1 → …), and the ZIP is named with the version. Set `0.2.0` by hand once the 12 in test blank has been cut.
 
+## 0.1.11 — 2026-10-31 (beta)
+- The library list is now in a collapsed **Chess-set library** section, so the Chess set section normally shows just the set in use. It opens by itself when no set is installed
+- Fix: the library no longer offers to "update" to an older version (seen with the withdrawn Staunton 1.0.0). **Update to** now appears only when an older version is installed
+
 ## 0.1.10 — 2026-10-31 (beta)
 - **Remove installed sets**: **Remove** next to the set in use, ✕ next to each other installed set, with a confirmation first. The set's stored files are deleted from ncSender; exports you've already written are not touched
 - Removing the set in use switches to another installed set, or shows "No chess set installed" if none is left

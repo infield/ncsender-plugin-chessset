@@ -18,6 +18,7 @@ ${S} .csc-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; 
 ${S} .csc-card { background: var(--color-surface-muted, var(--color-surface)); border: 1px solid var(--color-border); border-radius: var(--radius-small, 10px); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 ${S} .csc-card h3, ${S} .csc-card summary { margin: 0; font-size: 0.95rem; font-weight: 700; }
 ${S} details.csc-card > summary { cursor: pointer; }
+${S} details.csc-lib > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
 ${S} .csc-muted { color: var(--color-text-secondary); font-size: 12px; line-height: 1.45; }
 ${S} .csc-pkg-name { font-weight: 600; overflow-wrap: anywhere; }
 ${S} button { font: inherit; padding: 8px 14px; border-radius: var(--radius-small, 8px); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); cursor: pointer; }
