@@ -91,7 +91,7 @@ Any change to piece size or stock length means redoing all of it. Chess Set Crea
 The owner has decided that the plugin is for other ncSender rotary users, not only his own shop. Who those users are is still open: DISC-1 in `docs/product/decisions/discrepancies.md`, pending product discovery. Until that is decided, this section describes the first user and test site: Marc, on ncSender 2.x Pro (v2.0.271 on October 30, 2026), with a Sienci AltMill, a SuperLongBoard-EXT (grblHAL), and a Vortex rotary on A.
 
 1. Open **Chess Set Creator** from the tool menu. On the first open, confirm or edit the machine settings (§5.1).
-2. Pick an installed model package. With none installed, download the package ZIP from its release page (§5.9), unzip it, and import the folder.
+2. Pick an installed model package. With none installed, download a set's package ZIP from the chess-set library (§5.9), unzip it, and import the folder.
 3. Enter the queen base diameter, stock length, stock width and shape, and the allowances.
 4. Read the plan: the scaled piece sizes, fit checks, blanks per side, and each blank's layout with leftover length.
 5. Click **Export to File Manager**. The plugin writes `chess set/<job>/` with all the blank STLs, their sidecars and `layout.json`.
@@ -217,9 +217,9 @@ Rotary CAM lets the user choose the turning axis (X/Y/Z) and "On axis: Model ori
 ### 5.6 Model packages
 
 **v1** [C]:
-- One prepared package, published as a ZIP on a GitHub release (§5.9).
-- The user downloads it, unzips it and imports the folder.
-- Multiple packages, a package selector, in-plugin download, update offers and version pinning are [v2].
+- Packages come from a **chess-set library**: one repository holding one package per set style, each released on its own (§5.9). v1 publishes one set, Staunton. (owner, 2026-10-30)
+- The user downloads a set's ZIP, unzips it and imports the folder.
+- In the plugin, using several installed packages (a package selector), in-plugin download, update offers and version pinning are [v2]. The library can hold more sets before then.
 
 **Package rules** [P]:
 - The package contains `chess-set.json`, the six STL files (binary or ASCII), and `LICENSE`.
@@ -234,7 +234,7 @@ Rotary CAM lets the user choose the turning axis (X/Y/Z) and "On axis: Model ori
 {
   "schema": 1,                       // integer; v1 accepts exactly 1
   "id": "staunton-clarkerubber",     // [a-z0-9-]+
-  "version": "1.0.0",                // package version, semver: ^\d+\.\d+\.\d+$
+  "version": "0.1.0",                // package version, semver: ^\d+\.\d+\.\d+$
   "name": "Staunton (clarkerubber)", // display name
   "author": "clarkerubber; prepared by Marc Infield",
   "source": "https://github.com/clarkerubber/Staunton-Pieces/tree/cef2c79/Source/Staunton",
@@ -334,7 +334,11 @@ v1 keeps the last job's inputs in settings, so the dialog reopens with them. [P]
 
 **v1** [C]:
 - **Plugin:** a public repository, `infield/ncsender-plugin-chessset`, under GPL-3.0, as AAxis and ncCAM. Each version is a GitHub release with the plugin ZIP attached, as AAxis does it. The manifest's `repository` field points at the repository, so ncSender's update check finds new releases.
-- **Model package:** the prepared Staunton package is published as a ZIP on GitHub releases. Users download it, unzip it and import the folder. It is published from a separate repository, so the plugin repository's latest release is always a plugin build. [P]
+- **Model packages:** published from a separate, public **chess-set library** repository, `infield/chessset-library`, so the plugin repository's latest release is always a plugin build. [P] The library is general: it holds one package per set style, with Staunton the only set for now. [C] (owner, 2026-10-30)
+  - **Layout:** each set is a package folder under `sets/<id>/`, with its own `LICENSE`; there is no licence for the library as a whole. The README lists every set with its licence, source and latest release.
+  - **Releases:** each set is released on its own: tag `<id>-v<version>`, with one asset, `<id>-<version>.zip`, holding the set's folder.
+  - **Adding a set:** prepare it with the packaging tool (§10), and only from models whose licence allows redistribution.
+  - Users download a set's ZIP, unzip it and import the folder.
 - **Approval:** creating either public repository needs the owner's approval at release time. [C]
 
 **v2:**
@@ -585,7 +589,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
   6. Weld vertices and check that every mesh is closed. The tool fills small, simple holes itself (implementation plan P4.11). A mesh that still won't close is repaired in MeshLab and fed back to the tool. If it still won't close, the owner decides.
   7. Write `chess-set.json` and copy `LICENSE`.
   8. Record the results in Appendix B.
-- **Publishing:** the package folder is zipped and attached to a GitHub release (§5.9). It is never part of the plugin.
+- **Publishing:** the package folder goes in the chess-set library as `sets/staunton-clarkerubber/`, and is zipped and attached to the release `staunton-clarkerubber-v0.1.0` (§5.9). It is never part of the plugin.
 
 ## 11. Worked examples
 
@@ -763,9 +767,9 @@ One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as A
 | D9 | Dependencies | `devDependencies`: `esbuild ^0.28.2` and `playwright-core ^1.64.1`. No runtime libraries. STL reading and writing are our own code. | §7 rejects three.js, mesh kernels and fflate. |
 | D10 | Tests | `node --test tests/*.test.js`, on Node 22 (pinned to 22.22.0 in `.nvmrc`; `engines` ≥ 22). | Same test runner as ncCAM. Node 22 matches the Node bundled in the ncSender 2.0.27x desktop app (Electron 38; owner-reported 22.22.0). |
 | D11 | Plugin licence | GPL-3.0. [C] (DISC-8) `LICENSE` holds the full GPL text. | Matches AAxis and ncCAM. The owner briefly chose a dual GPL/commercial licence on 2026-10-30, then returned to GPL-3.0 only the same day. |
-| D12 | Versioning | The manifest starts at `0.1.0`. `build.sh` bumps the patch number unless given `--no-bump`. The first build uses `--no-bump` and ships 0.1.0. The planning milestone ships as 0.1.x. After the 12 in test blank is cut, set `0.2.0` by hand and build with `--no-bump`. Every build needs a CHANGELOG entry. | AAxis `CLAUDE.md` item 5. Publishing 0.1.x publicly departs from AAxis's "1.0.0 when shared publicly"; the owner chose public releases from M1 (DISC-8). |
+| D12 | Versioning | The manifest starts at `0.1.0`. `build.sh` bumps the patch number unless given `--no-bump`. The first build uses `--no-bump` and ships 0.1.0. The planning milestone ships as 0.1.x. After the 12 in test blank is cut, set `0.2.0` by hand and build with `--no-bump`. Every build needs a CHANGELOG entry. **Beta:** the plugin stays below 1.0 and its releases are titled "beta", as AAxis does. Model packages also start at `0.1.0` (beta) and reach `1.0.0` only with owner approval, after a set has been cut and checked in the shop. Beta releases are normal GitHub releases, not pre-releases, because ncSender's update check and the `releases/latest` links skip pre-releases. | AAxis `CLAUDE.md` item 5. Publishing 0.1.x publicly departs from AAxis's "1.0.0 when shared publicly"; the owner chose public releases from M1 (DISC-8). |
 | D13 | Host version floor and updates | `minAppVersion "2.0.88"`, `platforms {"v2":"2.0.88","pro-v2":"2.0.149"}`. `repository: "https://github.com/infield/ncsender-plugin-chessset"`, so ncSender's update check finds releases. | ncCAM's version values. DISC-5 may change the platforms. DISC-8 for the repository. |
-| D14 | Releases | **Plugin:** tag `v<version>`, then a GitHub release with `com.infield.chessset-<version>.zip` attached (the AAxis flow). **Model package:** `<id>-<version>.zip`, holding the package folder, on a release of a separate package repository, `infield/chessset-staunton-package` [P]. Creating either repository needs owner approval (given at M1, 2026-10-30). | §5.9 |
+| D14 | Releases | **Plugin:** tag `v<version>`, then a GitHub release with `com.infield.chessset-<version>.zip` attached (the AAxis flow). **Model packages:** tag `<id>-v<version>` in the chess-set library, `infield/chessset-library`, with `<id>-<version>.zip` (holding the package folder) attached; each set is released on its own [P]. Creating either repository needs owner approval (given at M1, 2026-10-30). | §5.9 |
 
 **Detail 1 — the Worker (D2).** The same bundle, `lib/app.js`, runs in two places:
 - **Inside a Worker** (`typeof document === 'undefined'`): it receives messages posted as `{...args, id, type}`, so `id` and `type` can't be overwritten (ncCAM `index.js:56`). It answers with `{id, ok:true, result}` or `{id, ok:false, error}`. `ArrayBuffer` results are transferred.
@@ -907,7 +911,7 @@ Write the Size, Stock, Allowances, Sides and Machine sections (P4.10), the plan 
 
 **M1 release:** with owner approval, create the public plugin repository and publish 0.1.x. Publish the package ZIP on a release of the separate package repository (D14).
 
-**M1 released (2026-10-30):** the owner approved the full release. `infield/ncsender-plugin-chessset` made public; release `v0.1.5` with the plugin ZIP. `infield/chessset-staunton-package` created (public); release `v1.0.0` with `staunton-clarkerubber-1.0.0.zip`, which was checked to import with the plugin's import code before publishing. AC-REL-01 and AC-PKG-02 remain manual checks for the owner.
+**M1 released (2026-10-30):** the owner approved the full release. `infield/ncsender-plugin-chessset` made public; release `v0.1.5` with the plugin ZIP. `infield/chessset-staunton-package` created (public); release `v1.0.0` with `staunton-clarkerubber-1.0.0.zip`, which was checked to import with the plugin's import code before publishing. The same day the owner made it a general library: renamed `infield/chessset-library` (GitHub redirects the old name), the set moved to `sets/staunton-clarkerubber/`, and the release re-tagged per set. The owner then kept the set in beta: it is version `0.1.0`, released as `staunton-clarkerubber-v0.1.0` (titled beta); the `1.0.0` releases were removed. AC-REL-01 and AC-PKG-02 remain manual checks for the owner.
 
 #### Phase 5 — Export (needs Phase 0)
 
@@ -1069,7 +1073,7 @@ All three are pure.
 {
   "format": "chess-set-creator-layout", "formatVersion": 1, "createdAt": "<ISO>",
   "plugin": { "id": "com.infield.chessset", "version": "0.1.0" },
-  "package": { "id": "staunton-clarkerubber", "version": "1.0.0", "name": "Staunton (clarkerubber)" },
+  "package": { "id": "staunton-clarkerubber", "version": "0.1.0", "name": "Staunton (clarkerubber)" },
   "units": "mm", "frame": "x-axis-base-at-origin-v1", "turningAxis": "X", "onAxis": "model-origin",
   "scale": 1.27, "queenBaseDiameter": 38.1,
   "stock": { "length": 304.8, "width": 50.8, "shape": "square", "jawSet": "alternate" },

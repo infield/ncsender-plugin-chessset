@@ -26,7 +26,7 @@ These come from spec, Detailed Implementation Plan, P3, which holds each phase's
 - **M1, planning:** Phases 1–4. Ships as 0.1.x and does not depend on Rotary CAM.
 - **M2, export:** Phases 5–6, after the Phase 0 Rotary CAM test. Reaches 0.2.0 once the test blank is cut.
 
-Release channel (DISC-8): GitHub releases of `infield/ncsender-plugin-chessset`, under GPL-3.0 (D11). Public since the M1 release (0.1.5, 2026-10-30). The Staunton model package is released from `infield/chessset-staunton-package` (1.0.0).
+Release channel (DISC-8): GitHub releases of `infield/ncsender-plugin-chessset`, under GPL-3.0 (D11). Public since the M1 release (0.1.5, 2026-10-30). Model packages are released from the chess-set library, `infield/chessset-library`: one package per set style, Staunton (0.1.0, beta) for now. The plugin and the sets stay in beta (below 1.0) until a set has been cut and checked in the shop.
 
 ## v2: documented intent
 

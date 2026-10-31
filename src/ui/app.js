@@ -167,7 +167,7 @@ export async function mountApp(root, host, engine) {
           h('div', { class: 'csc-pkg-name', dataset: { pkg: 'name' }, text: pkg.name }),
           h('div', { class: 'csc-muted', text: `Version ${pkg.version} · ${pkg.author}` }),
           h('div', { class: 'csc-muted', text: `${pkg.license} · ${pkg.attribution}` }))
-      : h('div', { class: 'csc-muted', text: 'No model package installed. Download the package ZIP from its release page, unzip it, then import the folder.' });
+      : h('div', { class: 'csc-muted', text: 'No model package installed. Download a set from the chess-set library (github.com/infield/chessset-library), unzip it, then import the folder.' });
 
     const errors = state.importErrors.length
       ? h('ul', { class: 'csc-errors', dataset: { importErrors: '' } }, state.importErrors.map((e) => h('li', { text: e })))

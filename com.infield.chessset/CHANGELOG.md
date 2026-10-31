@@ -2,6 +2,10 @@
 
 Versioning: `0.1.x` while planning is built and tested. **Every build that gets zipped increments the patch number** (0.1.0 → 0.1.1 → …), and the ZIP is named with the version. Set `0.2.0` by hand once the 12 in test blank has been cut.
 
+## 0.1.6 — 2026-10-30
+- Model packages now come from the chess-set library (github.com/infield/chessset-library), one package per set style; the README and the "no package" hint point there
+- The Staunton set is now version 0.1.0 (beta), like the plugin. If you imported 1.0.0, import the new ZIP once; it replaces it as the set in use
+
 ## 0.1.5 — 2026-10-30 (first public release)
 - First public release: planning (M1). Export for Rotary CAM comes in 0.2
 - README links to the plugin's releases and to the Staunton model package release

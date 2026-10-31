@@ -59,8 +59,8 @@ test('the prepared package imports: 8 files saved, measurements recorded', { ski
   let patchFn = null;
   const result = await importPackage({ fm, call, fileList: folderFiles(PACKAGE_DIR), saveSettings: async (p) => { patchFn = p; } });
   assert.equal(result.ok, true, JSON.stringify(result.errors));
-  assert.equal(result.key, 'staunton-clarkerubber@1.0.0');
-  const dir = '.chess-set-creator/sets/staunton-clarkerubber@1.0.0';
+  assert.equal(result.key, 'staunton-clarkerubber@0.1.0');
+  const dir = '.chess-set-creator/sets/staunton-clarkerubber@0.1.0';
   assert.deepEqual(fm.saves, [`${dir}/chess-set.json`, `${dir}/LICENSE`, ...ROLES.map((r) => `${dir}/${r}.stl.b64`)]);
   for (const role of ROLES) {
     for (const [k, v] of Object.entries(APPENDIX_B[role])) {

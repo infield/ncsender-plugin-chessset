@@ -209,7 +209,7 @@ function preparePackage(src, outDir, flip, replacements) {
   const manifest = {
     schema: 1,
     id: 'staunton-clarkerubber',
-    version: '1.0.0',
+    version: '0.1.0', // beta until a set is cut and checked in the shop (D12)
     name: 'Staunton (clarkerubber)',
     author: 'clarkerubber; prepared by Marc Infield',
     source: 'https://github.com/clarkerubber/Staunton-Pieces/tree/cef2c79/Source/Staunton',

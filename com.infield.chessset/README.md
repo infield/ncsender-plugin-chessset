@@ -22,11 +22,11 @@ The first time it opens, the plugin asks for:
 
 The values shown are an example machine. Edit them to match yours. You can change them later in the **Machine** section.
 
-## Get and import the model package
+## Get and import a model package
 
-The chess-piece models are not inside the plugin. They come as a separate package:
+The chess-piece models are not inside the plugin. They come from the [chess-set library](https://github.com/infield/chessset-library), one package per set style (Staunton for now):
 
-1. Download the package ZIP (for example `staunton-clarkerubber-1.0.0.zip`) from the [Staunton package's latest release](https://github.com/infield/chessset-staunton-package/releases/latest).
+1. In the library's list of sets, open the set's release and download its ZIP (for example `staunton-clarkerubber-0.1.0.zip`).
 2. Unzip it. You get a folder holding `chess-set.json`, six `.stl` files and `LICENSE`.
 3. In the plugin, click **Import package folder** and pick that folder.
 

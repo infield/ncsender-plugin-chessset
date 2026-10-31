@@ -105,7 +105,7 @@ try {
     expect((await text('[data-pkg="name"]')) === 'Staunton (clarkerubber)', 'package name not shown');
     const store = await (await fetch(mock.url + '__mock/store')).json();
     const files = Object.keys(store.files);
-    expect(files.length === 8 && files.every((f) => f.startsWith('.chess-set-creator/sets/staunton-clarkerubber@1.0.0/')), files.join(', '));
+    expect(files.length === 8 && files.every((f) => f.startsWith('.chess-set-creator/sets/staunton-clarkerubber@0.1.0/')), files.join(', '));
     const tree = await (await fetch(mock.url + 'api/gcode-files')).json();
     expect(tree.tree.length === 0, 'the stored package is visible in the File Manager tree');
   });
