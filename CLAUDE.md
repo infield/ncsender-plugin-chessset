@@ -70,3 +70,4 @@ EGM writes its reports under fixed names (`zoom_out_report.md`, `critic_report.m
 - **Google Drive:** the repo lives on a Drive shared drive. Git needs delete permission on the folder to clean up its lock and temp files (see `../AAxis/CLAUDE.md`, Git / releases).
 - **Moves:** use `git mv` so history follows the file.
 - **Commits:** commit only when asked.
+- **Branch:** work on `main` (phase branches are merged and deleted). Before committing, check `git branch --show-current`; after pushing, check `git ls-remote origin main` matches `git rev-parse main`. On October 30, 2026, commits landed on a phase branch for eight commits while GitHub's `main` stood still.
