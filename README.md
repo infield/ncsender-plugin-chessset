@@ -1,6 +1,6 @@
 # Chess Set Creator (ncSender plugin)
 
-*This plugin started as a joke posted on the ncSender Discord channel.*
+*This plug-in is the punchline to a joke posted on the ncSender Discord channel.*
 
 **Status: public beta, 0.1.x.** Planning works and is released. Export works, but its files haven't been tested in Rotary CAM yet, because Rotary CAM isn't released. Latest release: [GitHub releases](https://github.com/infield/ncsender-plugin-chessset/releases/latest).
 
