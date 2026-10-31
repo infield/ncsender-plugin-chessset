@@ -1,5 +1,7 @@
 # Chess Set Creator — ncSender plugin
 
+*This plugin started as a joke posted on the ncSender Discord channel.*
+
 Plans a turned chess set onto rotary blanks. You pick the queen's base diameter, your stock length and width, and the end allowances; the plugin scales a model package, checks that every piece fits your stock and chuck jaws, and packs the sixteen pieces of each side onto the fewest blanks.
 
 Status: 0.1.x beta. The plugin sets up your machine, imports the model package, plans the blanks and exports one STL per blank. The files haven't been tested in Rotary CAM yet.

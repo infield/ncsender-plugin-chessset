@@ -7,7 +7,7 @@ Work moves through four stages. Each stage owns its own documents. A stage can b
 | Question | Authoritative source | Owner stage |
 |---|---|---|
 | What must the plugin do, and how is it designed and planned? | [`docs/designs/egm/chess-set-creator.md`](docs/designs/egm/chess-set-creator.md). This is the only spec: requirements §1–§5, architecture §6–§8, implementation plan P1–P6. | EGM (requirements content set by product management) |
-| Which design findings are open, and which owner decisions do they need? | [`docs/designs/egm/reviews/rev7/consolidated_review_report.md`](docs/designs/egm/reviews/rev7/consolidated_review_report.md) | EGM |
+| Which design findings are open, and which owner decisions do they need? | The latest round in [`docs/designs/egm/reviews/INDEX.md`](docs/designs/egm/reviews/INDEX.md) (Rev 8, all resolved in Rev 9). The owner-directed changes made since, during implementation, are unreviewed; a Rev 10 snapshot and review round would cover them | EGM |
 | What has the owner decided, and what is pending? | [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md) | Product management |
 | Where does new evidence conflict with the spec? | [`docs/product/decisions/discrepancies.md`](docs/product/decisions/discrepancies.md) | Product management |
 | Which spec section covers a feature, and what is its status? | [`docs/product/requirements/feature-index.md`](docs/product/requirements/feature-index.md). This is an index only; the spec wins any disagreement. | Product management |

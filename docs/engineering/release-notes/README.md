@@ -1,3 +1,3 @@
 # Release notes
 
-Per plan P2 and the AAxis convention, release notes will live in `com.infield.chessset/CHANGELOG.md`, with one entry per build. No releases yet.
+Release notes live in [`com.infield.chessset/CHANGELOG.md`](../../../com.infield.chessset/CHANGELOG.md), one entry per build (plan D12, the AAxis convention). Each public version is also a GitHub release: [plugin releases](https://github.com/infield/ncsender-plugin-chessset/releases). Chess sets are released separately in the [chess-set library](https://github.com/infield/chessset-library/releases).

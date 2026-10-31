@@ -1,8 +1,8 @@
 # Chess Set Creator — ncSender plugin feature spec
 
-Owner: Marc Infield · Revision 9 · October 30, 2026 · Status: draft, not implemented
+Owner: Marc Infield · Revision 9 · October 30, 2026 · Status: implemented as the public beta 0.1.x (planning, the chess-set library and export); export not yet tested in Rotary CAM
 
-Revision 9 resolves the Revision 8 re-review. Revision history: `docs/designs/egm/history/CHANGES.md`. Review rounds: `docs/designs/egm/reviews/INDEX.md`. Owner decisions: `docs/product/decisions/product-decisions.md`. The woodworking build notes live in `docs/research/domain/wooden-staunton-build-notes.md`.
+Revision 9 resolves the Revision 8 re-review. During implementation on October 30, 2026, the owner made further changes, edited into this revision and logged in the decision log (units follow ncSender, the chess-set library and its picker, export before Phase 0 with outcome A, beta versioning, GPL-3.0, DISC-1/5/7). They have not been through an EGM review; a Revision 10 snapshot and review round would cover them. Revision history: `docs/designs/egm/history/CHANGES.md`. Review rounds: `docs/designs/egm/reviews/INDEX.md`. Owner decisions: `docs/product/decisions/product-decisions.md`. The woodworking build notes live in `docs/research/domain/wooden-staunton-build-notes.md`.
 
 **File paths** in this document are relative to the project root (`Chess-Set-Creator/`), not to this file. Spelling is British; dates are written as month day, year.
 
@@ -751,7 +751,7 @@ One side totals 289,668 triangles: about 14.5 MB as binary STL, about 72 MB as A
 - The owner's October 30, 2026 decisions are written in.
 - All findings from the Revision 6, 7 and 8 reviews are resolved in the text below.
 - Stages 7 and 9 have each used their one re-review (`docs/designs/egm/reviews/rev8/`).
-- Milestone M1 (Phases 1–4) is ready for engineering. Phase 5 also needs Phase 0.
+- Milestone M1 (Phases 1–4) is built and released (0.1.5). Phase 5 was built early, at the owner's request (0.1.7–0.1.8); Phase 0 still confirms the support outcome, and Phase 6 follows it.
 
 **Numbering:** plan sections are P1–P6, kept separate from the spec's § numbers. A bare § always refers to the spec.
 

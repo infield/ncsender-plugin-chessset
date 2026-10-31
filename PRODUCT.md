@@ -8,20 +8,21 @@ This page is an index. The requirements live in the spec, [`docs/designs/egm/che
 |---|---|---|
 | Problem statement | Spec §1 | Laying 32 pieces out across turning blanks by hand in CAD, and redoing it whenever the size or stock changes |
 | Goals and non-goals (v1) | Spec §2 | Six goals, all tagged [C]. Non-goals include G-code generation, machine motion, automatic shrinking, weight pockets and promotion queens |
-| Users | Spec §4 | "One user: Marc, on ncSender 2.x Pro … working at the shop machine." §4 now names them: advanced hobbyists who run ncSender with a rotary axis (DISC-1, decided 2026-10-30), with the owner's shop as the first user and test site. |
+| Users | Spec §4 | Advanced hobbyists who run ncSender with a rotary axis (DISC-1, decided 2026-10-30), with the owner's shop as the first user and test site |
 | Requirements | Spec §5.1–§5.11 | Each item is tagged [C] confirmed, [P] proposed, [O-n] open, or [v2] |
 | Acceptance criteria | Spec §9 | AC-PKG, AC-SEC, AC-IN, AC-SIZE, AC-FIT, AC-PLAN, AC-UI, AC-EXP |
 | Open questions | Spec §13 | O-1 … O-13 |
 | Feature → spec index, with status | [`docs/product/requirements/feature-index.md`](docs/product/requirements/feature-index.md) | F1 … F12 |
 | Owner decisions so far | [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md) | |
-| Rev 7 review and its decisions | [`docs/designs/egm/reviews/rev7/consolidated_review_report.md`](docs/designs/egm/reviews/rev7/consolidated_review_report.md) | A1–A8 decided and written into Rev 8 |
+| Review history | [`docs/designs/egm/reviews/INDEX.md`](docs/designs/egm/reviews/INDEX.md) | Last review: Rev 8 (resolved in Rev 9). Changes made since then during implementation are owner decisions, not yet reviewed |
+| Releases | [Plugin releases](https://github.com/infield/ncsender-plugin-chessset/releases), [chess-set library](https://github.com/infield/chessset-library) | Public beta 0.1.x; five sets at 0.1.0 |
 
 ## MISSING
 
 | Artifact | Status |
 |---|---|
 | Product vision statement | MISSING |
-| Target audience definition (who, which machines and ncSender versions) | MISSING. Direction decided (other ncSender rotary users); no profile yet |
+| Target audience definition | Partly: advanced-hobbyist ncSender rotary users on the latest ncSender 2.x, using Rotary CAM (DISC-1, 5, 7). No profile of their machines or rotary units yet |
 | Personas, jobs-to-be-done, ideal customer profile | MISSING (`docs/product/personas/`, `docs/research/`) |
 | Success metrics (outcomes, not acceptance tests) | MISSING. For example, time saved or stock wasted compared with manual layout |
 | Competitive or alternatives analysis (manual CAD layout, other tools) | MISSING |
@@ -29,9 +30,9 @@ This page is an index. The requirements live in the spec, [`docs/designs/egm/che
 
 ## Audience decision (2026-10-30)
 
-**The product is for other ncSender rotary users, not only the owner's shop.** It's recorded in [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md).
+**The product is for advanced-hobbyist ncSender rotary users, not only the owner's shop.** It's recorded in [`docs/product/decisions/product-decisions.md`](docs/product/decisions/product-decisions.md).
 
-The spec still describes one user and one shop. Eight conflicts are logged for owner decision in [`docs/product/decisions/discrepancies.md`](docs/product/decisions/discrepancies.md):
+Eight conflicts between that decision and the spec were logged in [`docs/product/decisions/discrepancies.md`](docs/product/decisions/discrepancies.md):
 - DISC-1: the user description
 - DISC-2: fixed wood species
 - DISC-3: the owner's jaw sets
