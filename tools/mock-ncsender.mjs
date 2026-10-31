@@ -1,6 +1,6 @@
 // Mock ncSender for the dialog (implementation plan P4.12). Adapted from
 // ncCAM's dev/serve.mjs. The store is in memory only.
-// Usage: npm run mock [-- <port>]     then open http://localhost:8777/
+// Usage: npm run mock [-- <port> [metric|imperial]]     then open http://localhost:8777/
 import { createServer } from 'node:http';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -10,7 +10,7 @@ const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const PLUGIN_DIR = join(ROOT, 'com.infield.chessset');
 const ID = 'com.infield.chessset';
 
-export function startMock({ port = 8777, quiet = false } = {}) {
+export function startMock({ port = 8777, quiet = false, units = 'metric' } = {}) {
   const store = new Map(); // path → {content} or {size} for .stl
   let settings = null; // null until the first PUT
   let failAfter = 0; // the n-th following save returns 500
@@ -83,6 +83,8 @@ export function startMock({ port = 8777, quiet = false } = {}) {
         return send(res, 200, { success: true });
       }
     }
+    // ncSender's units setting, read as {key, value} (§12). ncSender's default is metric.
+    if (p === '/api/settings/unitsPreference' && m === 'GET') return send(res, 200, { key: 'unitsPreference', value: units });
     if (p === '/api/gcode-files' && m === 'GET') return send(res, 200, tree());
     if (p === '/api/gcode-files/file' && m === 'GET') {
       const path = url.searchParams.get('path') || '';
@@ -115,6 +117,10 @@ export function startMock({ port = 8777, quiet = false } = {}) {
       failAfter = Number(JSON.parse((await readBody(req)) || '{}').after) || 0;
       return send(res, 200, { failAfter });
     }
+    if (p === '/__mock/units' && m === 'POST') {
+      units = JSON.parse((await readBody(req)) || '{}').units === 'imperial' ? 'imperial' : 'metric';
+      return send(res, 200, { units });
+    }
     if (p === '/__mock/store' && m === 'GET') {
       return send(res, 200, { settings, files: Object.fromEntries([...store].map(([k, v]) => [k, v.content !== undefined ? { size: Buffer.byteLength(v.content) } : v])) });
     }
@@ -127,6 +133,6 @@ export function startMock({ port = 8777, quiet = false } = {}) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const { url } = await startMock({ port: Number(process.argv[2]) || 8777 });
+  const { url } = await startMock({ port: Number(process.argv[2]) || 8777, units: process.argv[3] === 'imperial' ? 'imperial' : 'metric' });
   console.log(`mock ncSender at ${url}`);
 }

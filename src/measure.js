@@ -108,19 +108,49 @@ export function measure(tris) {
   };
 }
 
-// Largest radius in each PROFILE_STEP slice from minX; an empty slice
-// repeats the previous value.
-export function profile(tris) {
+// The largest value of f(y, z) in each PROFILE_STEP slice from minX; an
+// empty slice repeats the previous value. A cross-section is a polygon, and
+// a convex f (a radius, or ±z) peaks at one of its corners: a vertex, or a
+// point where an edge crosses the section plane. So both are sampled: every
+// vertex, and every edge crossing of a slice boundary (which counts for the
+// slices on both sides). Vertices alone miss long edges that span a slice.
+function sliceMax(tris, f) {
   const { minX, axialLength } = measure(tris);
   const slices = Math.max(1, Math.ceil(axialLength / PROFILE_STEP));
-  const radii = new Array(slices).fill(-1);
-  for (let i = 0; i < tris.length; i += 3) {
-    const s = Math.min(slices - 1, Math.floor((tris[i] - minX) / PROFILE_STEP));
-    const r = Math.hypot(tris[i + 1], tris[i + 2]);
-    if (r > radii[s]) radii[s] = r;
+  const out = new Array(slices).fill(-Infinity);
+  const put = (s, v) => {
+    if (s >= 0 && s < slices && v > out[s]) out[s] = v;
+  };
+  const sliceOf = (x) => Math.min(slices - 1, Math.floor((x - minX) / PROFILE_STEP));
+  for (let i = 0; i < tris.length; i += 3) put(sliceOf(tris[i]), f(tris[i + 1], tris[i + 2]));
+  for (let t = 0; t < tris.length; t += 9) {
+    for (let e = 0; e < 3; e++) {
+      const a = t + e * 3;
+      const b = t + ((e + 1) % 3) * 3;
+      let [x0, y0, z0, x1, y1, z1] = [tris[a], tris[a + 1], tris[a + 2], tris[b], tris[b + 1], tris[b + 2]];
+      if (x0 > x1) [x0, y0, z0, x1, y1, z1] = [x1, y1, z1, x0, y0, z0];
+      for (let k = Math.floor((x0 - minX) / PROFILE_STEP) + 1; minX + k * PROFILE_STEP < x1; k++) {
+        const u = (minX + k * PROFILE_STEP - x0) / (x1 - x0);
+        const v = f(y0 + u * (y1 - y0), z0 + u * (z1 - z0));
+        put(k - 1, v);
+        put(k, v);
+      }
+    }
   }
-  for (let s = 0; s < slices; s++) if (radii[s] < 0) radii[s] = s > 0 ? radii[s - 1] : 0;
-  return radii;
+  for (let s = 0; s < slices; s++) if (out[s] === -Infinity) out[s] = s > 0 ? out[s - 1] : 0;
+  return out;
+}
+
+// Largest radius about the X axis in each slice: the turning envelope.
+export function profile(tris) {
+  return sliceMax(tris, (y, z) => Math.hypot(y, z));
+}
+
+// The side view seen along Y (+Z up): the highest and lowest Z in each
+// slice. For a turned piece it matches the profile; for the knight it shows
+// the head, which faces +Z.
+export function sideProfile(tris) {
+  return { top: sliceMax(tris, (y, z) => z), bottom: sliceMax(tris, (y, z) => -z).map((v) => -v) };
 }
 
 // §5.6 import checks 3 and 4 for one file. Pure and synchronous. No closure
@@ -130,7 +160,7 @@ export function checkPiece(buf) {
   try {
     tris = parseStl(buf);
   } catch (e) {
-    return { measurements: null, profile: null, tris: null, errors: [{ check: 'parse', value: e.message }] };
+    return { measurements: null, profile: null, side: null, tris: null, errors: [{ check: 'parse', value: e.message }] };
   }
   const measurements = measure(tris);
   const errors = [];
@@ -140,5 +170,5 @@ export function checkPiece(buf) {
   if (Math.abs(measurements.minX) > FRAME_TOL) {
     errors.push({ check: 'basePlane', value: measurements.minX, limit: FRAME_TOL });
   }
-  return { measurements, profile: profile(tris), tris, errors };
+  return { measurements, profile: profile(tris), side: sideProfile(tris), tris, errors };
 }

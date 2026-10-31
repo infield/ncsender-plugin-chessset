@@ -45,6 +45,13 @@ export function createFm(base = '') {
       if (!res.ok) throw await fail(res);
       return res.json();
     },
+    // ncSender's units setting: 'in' for imperial, else 'mm' (§12).
+    async displayUnit() {
+      const res = await request('GET', '/api/settings/unitsPreference');
+      if (!res.ok) throw await fail(res);
+      const body = await res.json();
+      return (body.value ?? body.Value) === 'imperial' ? 'in' : 'mm';
+    },
     async getSettings() {
       const res = await request('GET', settingsPath);
       if (!res.ok) throw await fail(res);

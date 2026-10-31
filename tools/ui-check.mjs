@@ -3,8 +3,8 @@
 // Usage: npm run ui-check [-- --until=import|plan]
 //   CSC_CHROME=/path/to/chrome overrides the installed Chrome.
 //
-// Phase 3 runs steps 1, 1b, 2 (with the bad-package checks) and 8.
-// Steps 3–7 (planning) are added in Phase 4, and 9–11 (export) in Phase 5.
+// Runs steps 1–8 (plus the bad-package and jaw-set checks).
+// Steps 9–11 (export) are added in Phase 5.
 import { chromium } from 'playwright-core';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -20,7 +20,8 @@ if (!existsSync('com.infield.chessset/lib/app.js')) {
   process.exit(1);
 }
 
-const mock = await startMock({ port: PORT, quiet: true });
+// ncSender set to imperial at the start; step 4 switches it to metric.
+const mock = await startMock({ port: PORT, quiet: true, units: 'imperial' });
 const browser = await chromium.launch(process.env.CSC_CHROME ? { executablePath: process.env.CSC_CHROME } : { channel: 'chrome' });
 const page = await browser.newPage({ viewport: { width: 1400, height: 950 } });
 const problems = [];
@@ -116,7 +117,83 @@ try {
   });
 
   if (until !== 'import') {
-    console.log('skip  3–7 planning steps (Phase 4)');
+    const cards = () => page.locator('[data-blank]');
+    const lists = () => page.locator('[data-blank] .csc-pieces').allTextContents();
+    const planErrors = (code) => page.locator(`[data-plan-errors] li[data-code="${code}"]`);
+    let before;
+
+    await step('3. stock length 12 in gives 5 blank cards', async () => {
+      await page.fill('input[name="stockLength"]', '12');
+      await page.waitForFunction(() => document.querySelectorAll('[data-blank]').length === 5, null, { timeout: 5000 });
+      before = await lists();
+      expect(before[0] === 'Chuck → King · Queen · Pawn → tailstock', `blank 1: ${before[0]}`);
+      expect((await text('[data-blank="1"] h3')) === 'Blank 1 · per side × 2', 'card title');
+      expect((await text('[data-summary]')).includes('Light 5, Dark 5'), 'light/dark counts not shown');
+    });
+
+    await step('3b. previews are styled, also after an update without a page reload', async () => {
+      const fill = () => page.$eval('[data-blank="1"] .csc-pv-stock', (e) => getComputedStyle(e).fill);
+      expect((await fill()) !== 'rgb(0, 0, 0)', 'preview stock is unstyled (black)');
+      // Simulate the previous build's stylesheet left in the page.
+      await page.evaluate(() => { const s = document.getElementById('csc-style'); s.dataset.build = 'old'; s.textContent = ''; });
+      // Unstyled, the dialog is taller than the window; click Close in the page.
+      await page.$eval('[data-act="close"]', (b) => b.click());
+      await page.waitForSelector('.csc-shell', { state: 'detached' });
+      await page.click('#harness-open');
+      await page.waitForSelector('[data-blank="1"]', { timeout: 15000 });
+      expect((await fill()) !== 'rgb(0, 0, 0)', 'stale stylesheet was not replaced');
+    });
+
+    await step('4. ncSender switched to metric: mm first, inches below, gap 10, plan unchanged', async () => {
+      await page.evaluate(() => window.setHostUnits('metric'));
+      await page.waitForFunction(() => document.querySelector('input[name="gap"]')?.value === '10', null, { timeout: 5000 });
+      const stock = await page.locator('[data-blank="1"] [data-stock]').innerText();
+      expect(stock.replace(/\s+/g, ' ') === '304.8 mm × 50.8 mm square 12.00 in × 2.00 in', `stock: ${JSON.stringify(stock)}`);
+      expect((await page.inputValue('input[name="gap"]')) === '10', `gap field: ${await page.inputValue('input[name="gap"]')}`);
+      expect((await page.inputValue('input[name="stockLength"]')) === '304.8', 'stock length field not 304.8');
+      expect(JSON.stringify(await lists()) === JSON.stringify(before), 'plan changed on unit toggle');
+    });
+
+    await step('5. width 38.1 mm lists 5 pieces in the error box (AC-FIT-01)', async () => {
+      await page.fill('input[name="stockWidth"]', '38.1');
+      expect((await planErrors('TOO_WIDE').count()) === 5, `TOO_WIDE count ${await planErrors('TOO_WIDE').count()}`);
+      expect((await cards().count()) === 0, 'blank cards shown despite errors');
+      await page.fill('input[name="stockWidth"]', '50.8');
+      expect((await cards().count()) === 5, 'plan not back after width reset');
+    });
+
+    await step('5b. editing a jaw set changes accepted widths (AC-IN-04)', async () => {
+      await page.click('[data-section="machine"] summary');
+      await page.fill('[data-section="machine"] input[name="jaw1-max"]', '49');
+      await page.click('[data-section="machine"] [data-act="save-machine"]');
+      await page.waitForSelector('[data-plan-errors] li[data-code="JAW"]', { timeout: 5000 });
+      await page.fill('[data-section="machine"] input[name="jaw1-max"]', '63.5');
+      await page.click('[data-section="machine"] [data-act="save-machine"]');
+      await page.waitForFunction(() => document.querySelectorAll('[data-blank]').length === 5, null, { timeout: 5000 });
+    });
+
+    await step('6. gap 5 shows a RANGE message', async () => {
+      await page.fill('input[name="gap"]', '5');
+      expect((await planErrors('RANGE').count()) === 1, 'no RANGE error');
+      const hint = await page.locator('input[name="gap"] ~ .csc-hint').textContent();
+      expect(hint === 'Gap must be between 6.35 and 50 mm.', `hint: ${hint}`);
+      await page.fill('input[name="gap"]', '10');
+      expect((await cards().count()) === 5, 'plan not back after gap reset');
+    });
+
+    await step('7. closing right after an edit keeps it; reopen restores the inputs', async () => {
+      await page.fill('input[name="queenBase"]', '40');
+      await page.click('[data-act="close"]');
+      await page.waitForSelector('.csc-shell', { state: 'detached' });
+      await page.click('#harness-open');
+      await page.waitForSelector('[data-blank="1"]', { timeout: 15000 });
+      expect((await page.inputValue('input[name="queenBase"]')) === '40', `queen base: ${await page.inputValue('input[name="queenBase"]')}`);
+      expect((await page.inputValue('input[name="stockLength"]')) === '304.8', 'stock length not restored');
+      expect((await page.inputValue('input[name="gap"]')) === '10', 'not shown in mm after reopen');
+      expect((await cards().count()) === 5, 'queen base 40 on 12 in should give 5 blanks');
+      const { settings } = await (await fetch(mock.url + '__mock/store')).json();
+      expect(settings.lastInputs.queenBase === 40 && settings.lastInputs.stockLength === 304.8, `stored inputs not in mm: ${JSON.stringify(settings.lastInputs)}`);
+    });
   }
 
   await step('8. a <script> package name shows as plain text (AC-SEC-01)', async () => {

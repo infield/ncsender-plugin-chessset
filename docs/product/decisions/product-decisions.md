@@ -36,6 +36,7 @@ This log holds decisions made by the owner, Marc Infield. The October 30, 2026 e
 | 2026-10-30 | A8: rewrite plan P4 as module contracts plus the P5 test expectations; keep a single file tree | same; written into Rev 8 |
 | 2026-10-30 | **Licence changed to match ncSender:** dual GPL-3.0 / commercial licence. Copyright holder and commercial contact: Marc Infield, marc@infield.net. Replaces the GPL-3.0-only part of DISC-8. | Spec D11, §5.9, §7; `LICENSE` |
 | 2026-10-30 | **Licence changed back to GPL-3.0 only**, as AAxis and ncCAM. Reverses the dual-licence entry above; DISC-8's original GPL-3.0 decision stands. | Spec D11, §5.9, §7; `LICENSE` |
+| 2026-10-30 | **Units follow ncSender.** All measurements are stored, computed and exported in mm. The dialog shows lengths in ncSender's units setting (`unitsPreference`), with the other unit on a line below; the plugin's own in/mm toggle is removed. | Spec §5.1, AC-IN-02, P4.1, P4.7, P4.10, P4.12, P5.8, §12 |
 
 ## Pending
 

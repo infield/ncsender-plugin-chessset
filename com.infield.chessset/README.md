@@ -2,7 +2,7 @@
 
 Plans a turned chess set onto rotary blanks. You pick the queen's base diameter, your stock length and width, and the end allowances; the plugin scales a model package, checks that every piece fits your stock and chuck jaws, and packs the sixteen pieces of each side onto the fewest blanks.
 
-Status: early test build (0.1.x). This build installs, sets up your machine and imports the model package. Planning arrives in the next 0.1.x build. Export of blank STL files for Rotary CAM comes after that (0.2).
+Status: 0.1.x, planning. The plugin sets up your machine, imports the model package and plans the blanks. Export of blank STL files for Rotary CAM comes in 0.2.
 
 The plugin never moves the machine: it doesn't load programs, start jobs or send commands.
 
@@ -31,6 +31,14 @@ The chess-piece models are not inside the plugin. They come as a separate packag
 3. In the plugin, click **Import package folder** and pick that folder.
 
 The plugin checks the package and stores it in a hidden folder in ncSender's File Manager, so it works from every client and survives plugin updates. Import it once.
+
+## Plan a set
+
+Enter the queen's base diameter, the stock length, shape and width, the chuck and tailstock reservations, the gap between pieces and the radial allowance, and choose both sides or one. Lengths are shown in ncSender's units (set in ncSender's toolbar), with the other unit below. Everything is stored in millimetres. The plan updates as you type:
+- the scaled size of every piece;
+- any piece that doesn't fit, with the smallest stock width or length that would work;
+- blanks per side and the stock to buy;
+- one card per blank, with its pieces from chuck to tailstock, used and leftover length, the jaw set, and a to-scale side view.
 
 ## Export and Download files (coming in 0.2)
 

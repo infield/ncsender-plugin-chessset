@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { parseStl } from '../src/stl.js';
-import { weld, closedCheck, measure, checkPiece } from '../src/measure.js';
+import { weld, closedCheck, measure, checkPiece, profile, sideProfile } from '../src/measure.js';
 import { WELD_TOL, ROLES } from '../src/config.js';
 import { APPENDIX_B, PACKAGE_DIR, BAD_DIR } from './helpers/data.js';
 
@@ -57,4 +57,25 @@ test('prepared package: every piece passes checkPiece and matches Appendix B wit
 test('shifted-axis: exactly one error, axis offset', { skip: noBad }, () => {
   const r = checkPiece(readFileSync(`${BAD_DIR}/shifted-axis/pawn.stl`));
   assert.deepEqual(r.errors.map((e) => e.check), ['axisOffset']);
+});
+
+test('profile samples edge crossings: a long cone reads its true radius in every slice', () => {
+  // A cone along X from radius 10 at x=0 to radius 0 at x=20, 32 segments,
+  // with no vertices between the ends.
+  const tris = [];
+  const seg = 32;
+  for (let k = 0; k < seg; k++) {
+    const a0 = (2 * Math.PI * k) / seg;
+    const a1 = (2 * Math.PI * (k + 1)) / seg;
+    tris.push(0, 10 * Math.cos(a0), 10 * Math.sin(a0), 20, 0, 0, 0, 10 * Math.cos(a1), 10 * Math.sin(a1));
+    tris.push(0, 0, 0, 0, 10 * Math.cos(a1), 10 * Math.sin(a1), 0, 10 * Math.cos(a0), 10 * Math.sin(a0));
+  }
+  const radii = profile(Float64Array.from(tris));
+  const side = sideProfile(Float64Array.from(tris));
+  // The polygon has a corner at angle 90°, so the side view reaches ±r too.
+  side.top.forEach((z, i) => assert.ok(Math.abs(z - radii[i]) < 1e-9, `top ${i}`));
+  side.bottom.forEach((z, i) => assert.ok(Math.abs(z + radii[i]) < 1e-9, `bottom ${i}`));
+  assert.equal(radii.length, 40);
+  // Slice s spans x = s/2 … (s+1)/2; its widest point is at its left edge.
+  radii.forEach((r, s) => assert.ok(Math.abs(r - (10 - s * 0.25)) < 1e-9, `slice ${s}: ${r}`));
 });

@@ -11,12 +11,12 @@ export function createHandlers() {
   const handlers = {
     ping: () => 'pong',
 
-    // {files: {role: ArrayBuffer}} → {role: {measurements, profile, b64, errors}}
+    // {files: {role: ArrayBuffer}} → {role: {measurements, profile, side, b64, errors}}
     measurePackage({ files }) {
       const out = {};
       for (const role of ROLES) {
-        const { measurements, profile, tris, errors } = checkPiece(files[role]);
-        out[role] = { measurements, profile, errors, b64: errors.length ? null : toBase64(writeBinary(tris)) };
+        const { measurements, profile, side, tris, errors } = checkPiece(files[role]);
+        out[role] = { measurements, profile, side, errors, b64: errors.length ? null : toBase64(writeBinary(tris)) };
       }
       return out;
     },

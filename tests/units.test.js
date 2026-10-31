@@ -30,3 +30,10 @@ test('parse', () => {
   assert.equal(parse('abc', 'mm'), null);
   assert.equal(parse('2.', 'mm'), null);
 });
+
+test('parse: inches convert to clean mm', () => {
+  assert.equal(parse('12', 'in'), 304.8);
+  assert.equal(parse('1.5', 'in'), 38.1);
+  assert.equal(parse('0.75', 'in'), 19.05);
+  assert.equal(parse('0.001', 'in'), 0.0254);
+});

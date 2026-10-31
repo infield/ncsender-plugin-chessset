@@ -86,6 +86,7 @@ export async function importPackage({ fm, call, saveSettings, fileList, onProgre
       sweptDiameter: round3(m.sweptDiameter),
       topDiameter: round3(m.topDiameter),
       profile: checked[role].profile.map(round3),
+      side: { top: checked[role].side.top.map(round3), bottom: checked[role].side.bottom.map(round3) },
     };
   }
   const { id, version, name, author, source, license, attribution } = manifest;

@@ -6,7 +6,6 @@ import { fieldText } from './units.js';
 
 export const DEFAULTS = Object.freeze({
   schema: 1,
-  displayUnit: 'in',
   machine: null,
   packages: {},
   lastPackage: null,

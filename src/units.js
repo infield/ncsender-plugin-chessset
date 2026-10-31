@@ -49,5 +49,33 @@ export function parse(text, unit) {
   const t = String(text ?? '').trim();
   if (!DECIMAL.test(t)) return null;
   const value = Number(t);
-  return unit === 'in' ? value * MM_PER_IN : value;
+  // Inches are converted and rounded to 0.0001 mm, so 12 in is stored as
+  // exactly 304.8 and any 3-decimal inch value converts exactly.
+  return unit === 'in' ? Math.round(value * MM_PER_IN * 1e4) / 1e4 : value;
+}
+
+// Like fmt, for a minimum needed: both units rounded up (D8).
+export function fmtMin(mm, primary) {
+  const mmText = `${ceilTo(mm, 1).toFixed(1)} mm`;
+  const inText = `${ceilTo(mm / MM_PER_IN, 2).toFixed(2)} in`;
+  return primary === 'in' ? `${inText} (${mmText})` : `${mmText} (${inText})`;
+}
+
+// Like fmt, for a maximum that fits: both units rounded down (D8).
+export function fmtMax(mm, primary) {
+  const mmText = `${floorTo(mm, 1).toFixed(1)} mm`;
+  const inText = `${floorTo(mm / MM_PER_IN, 2).toFixed(2)} in`;
+  return primary === 'in' ? `${inText} (${mmText})` : `${mmText} (${inText})`;
+}
+
+// One unit only, half up: mm to 1 decimal, inches to 2.
+export function fmtOne(mm, unit) {
+  return unit === 'in' ? `${fixed(mm / MM_PER_IN, 2)} in` : `${fixed(mm, 1)} mm`;
+}
+
+// [primary, other] texts for a value shown on two lines: the display
+// unit first, the other unit on a smaller line below. Half up.
+export function fmtPair(mm, primary) {
+  const other = primary === 'in' ? 'mm' : 'in';
+  return [fmtOne(mm, primary), fmtOne(mm, other)];
 }

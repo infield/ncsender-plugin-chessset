@@ -103,7 +103,11 @@ The owner has decided that the plugin is for other ncSender rotary users, not on
 
 ### 5.1 Inputs
 
-Internal unit is mm. The display toggle chooses the primary unit (default: inches); the other unit appears in parentheses. Stored and exported values are always mm. [P]
+**Units.** [C] (owner, 2026-10-30)
+- Every measurement is stored, computed and exported in millimetres: settings, package measurements, plans, `layout.json` and sidecars.
+- The dialog shows lengths in ncSender's own units setting (`unitsPreference`): metric shows mm, imperial shows inches. It follows a change to that setting while the dialog is open. The plugin has no unit toggle of its own.
+- The other unit is always shown too, on a smaller line below: inches below mm, or mm below inches. Input fields show it in the line under the field. In sentences, such as error messages, it follows in parentheses.
+- If ncSender's setting can't be read, the dialog uses mm, ncSender's default.
 
 **Job inputs:**
 
@@ -278,7 +282,7 @@ All routes and behaviours below were checked in ncSender source at commit `2f8a6
 | Data | Where | API | Status |
 |---|---|---|---|
 | Installed package | File Manager: `.chess-set-creator/sets/<id>@<version>/`, holding the manifest, `LICENSE`, and the six meshes stored as base64-encoded binary STL (`<role>.stl.b64`, about 9 MB in total). The File Manager tree hides folders whose names start with `.` (§12), so a stored mesh can't be clicked and loaded as a program. | `POST /api/gcode-files/file/save {path, content}`; read back with `GET /api/gcode-files/file?path=` | [C] |
-| Settings: machine settings, installed-package list (with each package's measured dimensions), last job inputs, display unit | Plugin settings JSON | `GET`/`PUT /api/plugins/com.infield.chessset/settings` (implementation plan P4.7) | [P] |
+| Settings: machine settings, installed-package list (with each package's measured dimensions), last job inputs | Plugin settings JSON | `GET`/`PUT /api/plugins/com.infield.chessset/settings` (implementation plan P4.7) | [P] |
 | Exports | File Manager: `chess set/<job>/` | `POST /api/gcode-files/file/save` | [C] |
 
 The File Manager stores text only. That is why:
@@ -539,7 +543,7 @@ This follows `../AAxis/CLAUDE.md` for the ncSender 2.x plugin model: one tool-me
 | AC-PKG-04 | An installed package still works after a plugin update and with no internet connection. | §5.7 |
 | AC-SEC-01 | A manifest with `version: "../x"` is rejected, and a manifest with `<script>` in `name` is shown as plain text. | §5.6, §6 |
 | AC-IN-01 | An input that is out of range, or not a number, blocks planning and shows the range. | §5.1 |
-| AC-IN-02 | The display toggle switches the primary unit. Stored and exported values stay in mm, and toggling never changes a stored value. | §5.1 |
+| AC-IN-02 | The dialog shows lengths in ncSender's units setting, with the other unit below, and switches when that setting changes. Stored and exported values stay in mm, and a unit change never changes a stored value. | §5.1 |
 | AC-IN-03 | "Light only" plans and exports light-side blanks only. | §5.1 |
 | AC-IN-04 | On first open with no saved machine settings, the setup screen appears with the defaults filled in. Planning starts after it is saved. A jaw set edited there changes which stock widths are accepted. | §5.1, §5.3 |
 | AC-IN-05 | The dialog reopens with the last job's inputs. The piece table shows each piece's scaled axial length, base diameter and swept diameter. Invalid machine settings can't be saved. | §5.1, §5.2, §5.7 |
@@ -652,6 +656,7 @@ All from ncSender source at commit `2f8a659`, checked October 30, 2026:
 - **Uploads:** the File Manager's upload picker is limited to `.nc .gcode .gc .ngc .tap .txt`. That limit applies only to browser uploads, not to the save API. An upload (`POST /api/gcode-files`) also makes the uploaded file the active program (`GcodeFileEndpoints.cs:51–53`).
 - **Folders:** `POST /api/gcode-files/folders/delete {path}` deletes a folder.
 - **Load:** clicking a file in the File Manager calls the load routine with no extension check (R2).
+- **Units setting** (checked at ncSender commit `a75e84c`, October 30, 2026): `GET /api/settings/{name}` returns `{key, value}`, or 404 (`ServerBuilder.cs:553–559`). `unitsPreference` is `"metric"` or `"imperial"`, default `"metric"` (`SettingsManager.cs:218`). When settings change, the server broadcasts `settings-changed`, and each client re-fires it as a window `CustomEvent('settings-changed')` whose `detail` holds only the changed keys (`lib/api.js:721–728`). The plugin dialog runs in that window, so it receives the event.
 
 ## 13. Open questions
 
@@ -888,6 +893,8 @@ Write:
 - The plugin installs in ncSender.
 - The Phase 3 acceptance criteria pass.
 
+**Result (2026-10-30):** done. The 0.1.0 ZIP has no `.stl` inside (AC-PKG-01). The owner installed it in ncSender, saved the machine setup, imported the package, and reopened it after a reinstall with the network disconnected (AC-PKG-04). The bad packages are refused with one error each, in unit tests and in ui-check (AC-PKG-03, AC-SEC-01).
+
 #### Phase 4 — Planning UI and preview (completes M1)
 
 Write the Size, Stock, Allowances, Sides and Machine sections (P4.10), the plan view, the preview and `tools/ui-check.mjs`.
@@ -895,6 +902,8 @@ Write the Size, Stock, Allowances, Sides and Machine sections (P4.10), the plan 
 **Exit:**
 - `npm run ui-check -- --until=plan` passes.
 - The Phase 4 acceptance criteria pass.
+
+**Result (2026-10-30):** `ui-check --until=plan` passes, with an added jaw-set check (AC-IN-04). Built as 0.1.1; 0.1.2 fixes a stale stylesheet after an update without a page reload (found by the owner in ncSender; the style element is now tagged with the build and replaced when it changes, and ui-check step 3b covers it). `profile()` now also samples edge crossings at slice boundaries (P4.3), because vertices alone understated the radius in slices spanned by long edges; packages imported by 0.1.0 need one re-import. AC-UI-01 (preview to scale) is a manual check for the owner.
 
 **M1 release:** with owner approval, create the public plugin repository and publish 0.1.x. Publish the package ZIP on a release of the separate package repository (D14).
 
@@ -928,7 +937,8 @@ Write:
   - mm to 1 decimal: `"457.2 mm (18.00 in)"`
   - inches to 2 decimals: `"18.00 in (457.2 mm)"`
 - `fieldText(mm, unit)` returns the text for an input field: mm to 2 decimals, inches to 3, trailing zeros trimmed.
-- `parse(text, unit)` accepts a plain decimal only (optional leading digits, optional `.digits`). It returns mm, or `null`.
+- `parse(text, unit)` accepts a plain decimal only (optional leading digits, optional `.digits`). It returns mm, or `null`. Inch values are rounded to 0.0001 mm after conversion, so `12` in is stored as exactly `304.8`.
+- `fmtPair(mm, primary)` returns `[primary text, other-unit text]`, half up, for a value shown on two lines (§5.1). `fmtMin` and `fmtMax` are `fmt` with both units rounded up (minimums) or down (maximums), per D8.
 
 #### P4.2 `stl.js`
 
@@ -956,8 +966,9 @@ The axis is X.
   - The base band is the vertices with `x ≤ minX + BAND`.
   - `axisOffset` is the distance from the origin to the centre of the base band's Y/Z bounding box.
   - The diameters are twice the largest `hypot(y, z)`: over all vertices (swept), over the base band (base), and over `x ≥ maxX − BAND` (top).
-- `profile(tris)`: the largest radius in each `PROFILE_STEP` slice from `minX`. An empty slice repeats the previous value.
-- `checkPiece(buf)`: pure and synchronous. It runs §5.6 import checks 3 and 4 for one file and returns `{measurements, profile, tris, errors}`.
+- `profile(tris)`: the largest radius in each `PROFILE_STEP` slice from `minX`. It samples every vertex and every point where a triangle edge crosses a slice boundary (counted for the slices on both sides), since a cross-section's widest point is one of those; vertices alone understate slices that long edges span. An empty slice repeats the previous value.
+- `sideProfile(tris)`: the side view seen along Y with +Z up: `{top, bottom}`, the highest and lowest Z in each `PROFILE_STEP` slice, sampled the same way as `profile`. For a turned piece it matches `±profile`; for the knight, whose face points +Z, it shows the head.
+- `checkPiece(buf)`: pure and synchronous. It runs §5.6 import checks 3 and 4 for one file and returns `{measurements, profile, side, tris, errors}`.
   - Each error is `{check, value, limit}`.
   - A parse failure gives `{check:'parse', value:<message>}`, and nothing else is checked.
   - Otherwise both frame checks run, and every failure is collected:
@@ -1086,9 +1097,10 @@ All three are pure.
 | `readText(path)` | `GET /api/gcode-files/file?path=<encodeURIComponent(path)>`. Returns `(await res.json()).content`, or `null` on 404. Throws `{status, body}` otherwise. |
 | `tree()` | `GET /api/gcode-files`. Returns the parsed JSON (§12). |
 | `getSettings()`, `putSettings(obj)` | `GET` / `PUT /api/plugins/com.infield.chessset/settings`. |
+| `displayUnit()` | `GET /api/settings/unitsPreference` (§12). Returns `'in'` for `"imperial"`, otherwise `'mm'`. Throws `{status, body}` when the response isn't OK; the dialog then uses `'mm'`. |
 
 **`settings.js` contract:**
-- `DEFAULTS = {schema:1, displayUnit:'in', machine:null, packages:{}, lastPackage:null, lastInputs:{...§5.1 defaults, sides:'both'}}`.
+- `DEFAULTS = {schema:1, machine:null, packages:{}, lastPackage:null, lastInputs:{...§5.1 defaults, sides:'both'}}`.
 - `load(fm)` merges the stored settings over `DEFAULTS`, merging `lastInputs` field by field. On failure it returns `DEFAULTS` and sets `offline = true`.
 - `save(fm, patch)` runs these steps:
   1. GET the stored settings.
@@ -1108,7 +1120,6 @@ All three are pure.
 
 **When settings are saved:**
 - `lastInputs`: 1 s after the last input change, and flushed when the dialog closes.
-- `displayUnit`: on toggle.
 - `machine`: when **Save machine settings** or the Machine section's **Save** is pressed, and only if `validateMachine` returns no errors.
 - `packages` and `lastPackage`: on import.
 
@@ -1117,10 +1128,10 @@ All three are pure.
 **`importPackage({fm, call, settings, fileList, onProgress})`:**
 1. The user picks a folder with `<input type="file" webkitdirectory>`. The first segment of `webkitRelativePath` is the root; `names` are the paths with the root removed. If there is no root `chess-set.json`, the error is "No chess-set.json in the selected folder."
 2. Parse the JSON (a parse error is reported with `field:"(file)"`), then run `validateManifest`. Stop on any error.
-3. Read the six STLs. The Worker handler `measurePackage({files:{role: ArrayBuffer}})` runs `checkPiece` for each role and returns `{role: {measurements, profile, b64, errors}}`, where `b64 = toBase64(writeBinary(tris))`.
+3. Read the six STLs. The Worker handler `measurePackage({files:{role: ArrayBuffer}})` runs `checkPiece` for each role and returns `{role: {measurements, profile, side, b64, errors}}`, where `b64 = toBase64(writeBinary(tris))`.
 4. If any role has errors, show them all as `file — check — value (limit)` and store nothing.
 5. Save to `dir = PACKAGE_ROOT/<id>@<version>/`: `chess-set.json` (the original text), `LICENSE` (the `licenseFile` text) and the six `<role>.stl.b64` files. If a save fails, stop, write nothing to settings, and show *"Saving <path> failed (<status>). The package is not installed."*
-6. Save to settings: `packages["<id>@<version>"] = {id, version, name, author, source, license, attribution, dir, installedAt, pieces:{role:{axialLength, baseDiameter, sweptDiameter, topDiameter, profile}}}` and `lastPackage = "<id>@<version>"`. Re-importing the same key replaces it.
+6. Save to settings: `packages["<id>@<version>"] = {id, version, name, author, source, license, attribution, dir, installedAt, pieces:{role:{axialLength, baseDiameter, sweptDiameter, topDiameter, profile, side}}}` and `lastPackage = "<id>@<version>"`. Re-importing the same key replaces it.
 
 **`loadPackageMeshes({fm, call, key, pkg})`:**
 - Reads the six `.b64` files with `readText` and calls `loadPackage({key, b64})`.
@@ -1148,7 +1159,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 
 #### P4.10 UI (`src/ui/`)
 
-- **Shell:** a header (title, unit toggle, build tag) and two columns that stack below 900 px. Text is set only with `textContent`; there is no `innerHTML` anywhere in `src/`. The style element is injected once (`id="csc-style"`) and uses ncSender CSS variables. Selectors use (0,2,1) specificity, e.g. `.csc-shell .csc-main button` (AAxis item 9). No `alert`, `confirm` or `prompt`.
+- **Shell:** a header (title, build tag, and a note saying the units follow ncSender), pinned while the dialog scrolls, and two columns that stack below 900 px. Text is set only with `textContent`; there is no `innerHTML` anywhere in `src/`. The style element (`id="csc-style"`) is tagged with the build and replaced when the build changes, since a plugin update doesn't reload the page. It uses ncSender CSS variables. Selectors use (0,2,1) specificity, e.g. `.csc-shell .csc-main button` (AAxis item 9). No `alert`, `confirm` or `prompt`.
 - **First-run setup:** shown when `machine === null`. It holds the max blank length and 1–4 jaw-set rows (name, min, max), filled with `DEFAULT_MACHINE`, and a **Save machine settings** button. Nothing else shows until it is saved.
 - **Left column**, in order:
   1. **Package:** a read-only line for the installed package (a package selector is deferred to v2), the **Import package folder** button, import progress and errors.
@@ -1159,11 +1170,12 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
   6. **Machine:** collapsed; the same fields as the setup screen, with a **Save** button.
 - **Input fields:**
   - State holds mm.
+  - The unit comes from `fm.displayUnit()` when the dialog opens. The dialog listens for the window `settings-changed` event (§12); when its `detail.unitsPreference` changes the unit, the dialog re-renders. The listener is removed when the dialog closes.
   - A field is parsed only on its own `input` event; changing the unit re-renders the fields from state and never re-parses them.
   - Fields show `fieldText`. A small line below each one shows the other unit and the valid range, or the `RANGE` message.
 - **Right column** (shown when a package is installed):
   - the error box (only when there are errors)
-  - the piece table: role, per side, axial length, base Ø, swept Ø, and under outcome B a "top covered" mark
+  - the piece table: role, per side, axial length, base Ø, swept Ø, and under outcome B a "top covered" mark. Lengths in the table and on the cards show the display unit with the other unit on a smaller line below (§5.1).
   - a summary line
   - a settings banner, when settings are unavailable (P4.7)
   - one card per blank, titled "Blank 1 · per side × 2", or with the side name when only one side is selected (for example "Blank 1 · Light"). Each card shows:
@@ -1177,7 +1189,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 - **Preview:** an SVG with `viewBox="0 0 <stockLength> <stockWidth>"`. It holds:
   - the stock rectangle
   - the reservation areas
-  - each piece as its profile mirrored about the centre line `y = stockWidth/2`, offset by `chuckRes + xStart`
+  - each piece as its side view (`side.top` and `side.bottom`, +Z drawn up) about the centre line `y = stockWidth/2`, offset by `chuckRes + xStart`, with points at slice centres joined by straight lines. A turned piece looks the same from any side; the knight shows its head, not the round envelope it sweeps. Packages imported before `side` existed fall back to the profile mirrored about the centre line.
   - under outcome B, each connecting neck as a rectangle centred on the same line
 
   It is built with `createElementNS`, using ncSender CSS colour variables.
@@ -1213,6 +1225,7 @@ The exporter never calls `/api/gcode-files/load*`, `/api/gcode-job` or `/api/sen
 - `GET /api/plugins/com.infield.chessset/config-ui` returns `config.html` as `text/html`. Unlike the real host, which returns the raw file here, the mock fills in `__SERVER_PORT__`, copying what the real tool-menu execute path does (§12). `?raw=1` returns the file unfilled, for ui-check step 1b.
 - `icon?file=` serves files from `com.infield.chessset/` and rejects `..`.
 - Settings `GET` returns `{}` until the first `PUT`.
+- `GET /api/settings/unitsPreference` returns `{key, value}` with the mock's units (`metric` unless started otherwise). `POST /__mock/units {units}` changes it; the harness's `setHostUnits(units)` calls it and then fires the window `settings-changed` event, as ncSender's client does.
 - `/api/gcode-files` returns a tree in the §12 shape and hides dot-names.
 - `file/save` stores the content. For `.stl` files only the path and size are kept; `.b64` and every other file keep full content, since import stores packages and export reads them back. A save missing `path` or `content` returns 400.
 - `file?path=` returns `{content}`, or 404. A path containing `..` returns 404 on GET and 500 on save, as the host does.
@@ -1423,7 +1436,7 @@ These tests use a fake `fm` (with a fixed tree) and a fake `call`, both of which
    1b. Open `config-ui?raw=1` (the placeholders not filled in). The dialog falls back to port 8090 and shows no page errors.
 2. Import `packages/staunton-clarkerubber/` through `setInputFiles` on the `webkitdirectory` input. The package shows as installed.
 3. Set the stock length to 12 in. Expect 5 cards.
-4. Switch the units to mm. The first card shows `304.8 mm (12.00 in)`. The gap field shows `10`, and the plan is unchanged.
+4. The mock starts with ncSender set to imperial. Switch it to metric with `setHostUnits('metric')`. The first card's stock shows `304.8 mm × 50.8 mm`, with `12.00 in × 2.00 in` below. The gap field shows `10`, and the plan is unchanged. Step 7 also checks that the stored inputs are mm (`stockLength` exactly `304.8`).
 5. Type width 38.1 (mm): the error box lists 5 pieces. Set the width back to 50.8.
 6. Type gap 5: a `RANGE` message appears. Set the gap back to 10.
 7. Close the dialog, reopen it through the harness, and check that the inputs are restored. Close it immediately after an edit, so the close-time flush is what saves it.

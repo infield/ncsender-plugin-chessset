@@ -20,7 +20,7 @@
 </style>
 </head>
 <body>
-<div class="harness-bar"><button onclick="document.documentElement.classList.toggle('light')">Theme</button><button id="harness-open" onclick="openDialog()">Open</button></div>
+<div class="harness-bar"><button onclick="document.documentElement.classList.toggle('light')">Theme</button><button onclick="setHostUnits('metric')">Metric</button><button onclick="setHostUnits('imperial')">Imperial</button><button id="harness-open" onclick="openDialog()">Open</button></div>
 <div class="plugin-dialog-backdrop" id="bd"><div class="plugin-dialog"><div class="plugin-dialog-content" id="content"></div></div></div>
 <script>
   window.ncSender = { getApiBaseUrl: () => '' };
@@ -32,6 +32,12 @@
     c.innerHTML = html;
     c.querySelectorAll('script').forEach((old) => { const s = document.createElement('script'); s.textContent = old.textContent; old.replaceWith(s); });
   }
+  // Switch ncSender's units the way its toolbar does: save the setting,
+  // then the client fires a window 'settings-changed' event (§12).
+  window.setHostUnits = async (units) => {
+    await fetch('/__mock/units', { method: 'POST', body: JSON.stringify({ units }) });
+    window.dispatchEvent(new CustomEvent('settings-changed', { detail: { unitsPreference: units } }));
+  };
   window.addEventListener('message', (e) => { if (e.data && e.data.type === 'close-plugin-dialog') { document.getElementById('content').innerHTML = ''; document.getElementById('bd').style.display = 'none'; } });
   openDialog(new URLSearchParams(location.search).has('raw'));
 </script>

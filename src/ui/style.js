@@ -1,5 +1,5 @@
 // The dialog's stylesheet, injected once as <style id="csc-style">.
-// ncSender CSS variables only. Selectors start with `.csc-shell .csc-main`
+// ncSender CSS variables only. Tagged with the build (data-build). Selectors start with `.csc-shell .csc-main`
 // so they outrank the host's `.plugin-dialog-content button` rule (AAxis 9).
 const S = '.csc-shell .csc-main';
 
@@ -7,7 +7,7 @@ const CSS = `
 .csc-shell { width: 1100px; max-width: 94vw; max-height: 82vh; display: flex; flex-direction: column; color: var(--color-text-primary); font-family: inherit; font-size: 14px; }
 .csc-shell * { box-sizing: border-box; }
 ${S} { display: flex; flex-direction: column; min-height: 0; flex: 1; }
-${S} .csc-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--color-border); }
+${S} .csc-head { position: sticky; top: 0; z-index: 2; background: var(--color-surface); display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--color-border); }
 ${S} .csc-title { font-size: 1.15rem; font-weight: 700; }
 ${S} .csc-build { font-size: 11px; color: var(--color-text-secondary); }
 ${S} .csc-spacer { flex: 1; }
@@ -44,12 +44,31 @@ ${S} th, ${S} td { text-align: right; padding: 6px 8px; border-bottom: 1px solid
 ${S} th:first-child, ${S} td:first-child { text-align: left; }
 ${S} th { font-weight: 600; color: var(--color-text-secondary); font-size: 12px; }
 ${S} .csc-hidden { display: none; }
+${S} .csc-two { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
+${S} .csc-two small { font-size: 11px; font-weight: 400; color: var(--color-text-secondary); }
+${S} .csc-summary { display: flex; flex-direction: column; gap: 2px; font-weight: 600; }
+${S} .csc-pieces { font-weight: 600; }
+${S} .csc-kvs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; font-size: 13px; }
+${S} .csc-kv { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; border-bottom: 1px solid var(--color-border); padding: 3px 0; }
+${S} .csc-kv span { color: var(--color-text-secondary); }
+${S} .csc-kv b { font-weight: 500; text-align: right; }
+${S} svg.csc-pv { width: 100%; height: auto; display: block; border-radius: 4px; }
+${S} .csc-pv-stock { fill: var(--color-surface); stroke: var(--color-text-secondary); stroke-width: 1; vector-effect: non-scaling-stroke; }
+${S} .csc-pv-res { fill: color-mix(in srgb, var(--color-danger, #e74c3c) 22%, transparent); }
+${S} .csc-pv-axis { stroke: var(--color-text-secondary); stroke-width: 1; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; }
+${S} .csc-pv-piece { fill: color-mix(in srgb, var(--color-accent) 55%, transparent); stroke: var(--color-accent); stroke-width: 1; vector-effect: non-scaling-stroke; }
 `;
 
-export function injectStyle() {
-  if (document.getElementById('csc-style')) return;
-  const el = document.createElement('style');
-  el.id = 'csc-style';
+// A plugin update without a page reload leaves the old build's style
+// element in the page, so it is replaced when the build differs.
+export function injectStyle(build = '') {
+  let el = document.getElementById('csc-style');
+  if (el && el.dataset.build === build) return;
+  if (!el) {
+    el = document.createElement('style');
+    el.id = 'csc-style';
+    document.head.append(el);
+  }
+  el.dataset.build = build;
   el.textContent = CSS;
-  document.head.append(el);
 }
